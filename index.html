@@ -1,0 +1,1484 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#121614">
+<title>Movimiento es vida</title>
+<style>
+:root{--ink:#121614;--panel:#1a201d;--bone:#e8e2d4;--mist:#9aa198;--ember:#d6a35c;--line:rgba(232,226,212,.12);--serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;--sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;color-scheme:dark}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--ink);color:var(--bone);font-family:var(--sans);min-height:100%}
+body{line-height:1.5;-webkit-text-size-adjust:100%}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+button:disabled{cursor:not-allowed}
+:focus-visible{outline:2px solid var(--ember);outline-offset:2px}
+.muted{color:var(--mist)}.small{font-size:.85rem}
+.eyebrow{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--ember)}
+.eyebrow.muted{color:var(--mist)}
+h1,h2,h3{font-family:var(--serif);font-weight:500}
+[hidden]{display:none!important}
+
+/* título */
+.title{max-width:46rem;margin:0 auto;padding:3.5rem 1rem 4rem}
+.title h1{font-size:clamp(2.8rem,9vw,5rem);line-height:1.02;margin-top:.8rem}
+.title h1 em{color:var(--ember);font-style:italic}
+.premise{font-family:var(--serif);font-size:1.15rem;line-height:1.65;margin-top:1.6rem;max-width:38rem}
+.premise p+p{margin-top:.9rem}
+.howto{margin-top:1.4rem;padding-left:1.1rem;color:var(--mist);font-size:.95rem}
+.howto li+li{margin-top:.35rem}
+.title-actions{display:flex;flex-direction:column;gap:.7rem;max-width:26rem;margin-top:2rem}
+.confirm{margin-top:1rem;max-width:26rem;border:1px solid var(--line);background:var(--panel);padding:1rem}
+.confirm .row{display:flex;gap:.6rem;margin-top:.8rem}
+.endings{margin-top:3rem;border-top:1px solid var(--line);padding-top:1.4rem}
+.endings-grid{display:grid;gap:.8rem;margin-top:1rem;grid-template-columns:repeat(auto-fill,minmax(14rem,1fr))}
+.ending-card{border:1px solid var(--line);background:var(--panel);padding:1rem}
+.ending-card h3{font-size:1.2rem;margin-bottom:.3rem}
+
+/* botones */
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:2.9rem;padding:.6rem 1.1rem;border:1px solid var(--line);background:rgba(232,226,212,.04);text-align:left}
+.btn:hover{border-color:rgba(214,163,92,.6)}
+.btn.primary{border-color:rgba(214,163,92,.5);background:rgba(214,163,92,.12)}
+.btn.primary:hover{background:rgba(214,163,92,.2)}
+.btn.link{border:0;background:none;color:var(--mist);text-decoration:underline;text-underline-offset:3px}
+.btn.wide{width:100%;justify-content:flex-start;flex-direction:column;align-items:flex-start}
+
+/* juego */
+.game{display:flex;min-height:100vh}
+.side{width:19rem;flex-shrink:0;background:var(--panel);border-right:1px solid var(--line);padding:1.6rem 1.3rem;position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column}
+.side h2{font-size:1.5rem;margin-top:.3rem}
+.side .where{margin-top:.6rem;font-size:.9rem;color:var(--mist)}
+.stats{display:grid;gap:1rem;margin-top:1.6rem}
+.stat-head{display:flex;justify-content:space-between;gap:.5rem;font-size:.78rem}
+.stat-label{color:var(--mist)}
+.bar{display:flex;gap:3px;margin-top:.35rem}
+.bar span{height:5px;flex:1;background:rgba(232,226,212,.13)}
+.bar span.on{background:var(--ember)}
+.side-actions{display:flex;gap:.5rem;margin-top:auto;padding-top:1.5rem}
+.side-actions .btn{flex:1;font-size:.9rem}
+.topbar{display:none}
+.main{flex:1;min-width:0}
+.scene{max-width:42rem;margin:0 auto;padding:2.6rem 1.5rem 4rem}
+.echo{margin-top:.8rem;font-size:.88rem;color:var(--mist);font-style:italic}
+.fresh{margin-top:.6rem;font-size:.85rem;color:var(--ember)}
+.author{margin-top:.6rem;font:12px/1.4 ui-monospace,Menlo,Consolas,monospace;color:#7fb39a}
+.story{margin-top:1.4rem;font-family:var(--serif);font-size:1.16rem;line-height:1.72}
+.story p+p{margin-top:1.05rem}
+.rise{animation:rise .28s ease-out}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.rise{animation:none}}
+.actions{margin-top:2rem;padding-top:1.4rem;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:.65rem;align-items:stretch}
+.actions .btn.link{align-self:flex-start;min-height:auto;padding:.2rem 0}
+.choice{display:flex;gap:.9rem;text-align:left;border:1px solid var(--line);background:rgba(232,226,212,.035);padding:.85rem 1rem;min-height:2.9rem}
+.choice:hover:not(:disabled){border-color:rgba(214,163,92,.6);background:rgba(214,163,92,.08)}
+.choice:disabled{opacity:.42}
+.num{color:var(--ember);font-size:.78rem;padding-top:.2rem;font-variant-numeric:tabular-nums}
+.choice-body{display:flex;flex-direction:column;gap:.2rem}
+.choice-label{font-size:1rem}
+.choice-hint{font-size:.86rem;color:var(--mist)}
+.epitaph{font-family:var(--serif);font-size:1.1rem;color:var(--mist);font-style:italic}
+.save-note{max-width:42rem;margin:0 auto;padding:0 1.5rem 2rem;font-size:.8rem;color:var(--mist)}
+
+/* diálogos */
+dialog{margin:auto;width:min(36rem,calc(100% - 2rem));max-height:85vh;background:var(--panel);color:var(--bone);border:1px solid var(--line);padding:1.4rem}
+dialog::backdrop{background:rgba(10,12,11,.8)}
+.dlg-head{display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-bottom:1rem}
+.dlg-head h2{font-size:1.5rem}
+.tabs{display:flex;gap:.4rem;margin-bottom:1rem}
+.tabs button{padding:.4rem .8rem;border:1px solid var(--line);font-size:.88rem;color:var(--mist)}
+.tabs button.active{color:var(--bone);border-color:rgba(214,163,92,.6)}
+.clue+.clue{margin-top:1.2rem}
+.clue h3{font-size:1.15rem}
+.clue p{margin-top:.25rem;color:var(--mist);font-family:var(--serif);line-height:1.6}
+.history{padding-left:1.4rem;display:grid;gap:.6rem}
+.history li span{display:block}
+.menu-list{display:flex;flex-direction:column;gap:.6rem}
+.menu-list label.btn{cursor:pointer}
+.toast{position:fixed;left:50%;bottom:1.2rem;transform:translateX(-50%);background:var(--panel);border:1px solid rgba(214,163,92,.5);padding:.55rem 1rem;font-size:.9rem;z-index:50}
+
+/* móvil */
+@media (max-width:820px){
+  .game{display:block}
+  .side{display:none}
+  .topbar{display:block;position:sticky;top:0;z-index:10;background:var(--ink);border-bottom:1px solid var(--line);padding:.7rem 1rem}
+  .topbar-row{display:flex;justify-content:space-between;align-items:center;gap:.8rem}
+  .topbar .place{font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .topbar .when{font-size:.76rem;color:var(--mist)}
+  .topbar .btn{min-height:2.6rem;padding:.4rem .8rem;font-size:.85rem}
+  .stats.mobile{grid-template-columns:repeat(3,1fr);gap:.55rem .8rem;margin-top:.7rem}
+  .stat.compact .stat-head{font-size:.68rem}
+  .stat.compact .stat-word{display:none}
+  .scene{padding:1.6rem 1rem 3rem}
+  .story{font-size:1.08rem}
+}
+
+.name-input{display:block;width:100%;margin-top:.8rem;padding:.7rem .8rem;font:inherit;font-family:var(--serif);font-size:1.2rem;color:var(--bone);background:var(--ink);border:1px solid var(--line)}
+.name-input:focus{outline:none;border-color:rgba(214,163,92,.7)}
+.name-input::placeholder{color:rgba(232,226,212,.3)}
+
+</style>
+</head>
+<body>
+
+<main id="title" class="title" hidden>
+  <p class="eyebrow">Ficción interactiva · Thriller de supervivencia</p>
+  <h1>Movimiento<br>es <em>vida.</em></h1>
+  <div class="premise">
+    <p>Puerto Gris, una ciudad de puerto. El lunes, algo salió por los ductos de aire de un edificio del Comité Nacional de Salud. Los enfermos no muerden ni gritan: escuchan. Dentro de un sitio cerrado se quedan con la última voz clara que oyen y caminan hacia quien la dijo.</p>
+    <p>Eres el técnico que revisó ese ducto. Tu pareja, Andreína, no contesta el teléfono. Tu vecina Juliet acaba de leer la nota que le dejaste debajo de la puerta.</p>
+  </div>
+  <ul class="howto">
+    <li>Lees y eliges. Hablar también es una decisión.</li>
+    <li>Tus provisiones, tu cansancio y tu exposición cuentan. Juliet y Andreína recuerdan lo que haces.</li>
+    <li>Hay 17 finales. La partida se guarda sola en este navegador.</li>
+  </ul>
+  <div class="title-actions">
+    <button id="continue" class="btn primary wide" hidden><span>Continuar</span><span id="continueWhere" class="muted small"></span></button>
+    <button id="newGame" class="btn wide">Nueva partida</button>
+  </div>
+  <div id="confirmNew" class="confirm" hidden>
+    <p class="small">Esto borra la partida en curso. Los finales que ya viste se conservan.</p>
+    <div class="row"><button id="confirmYes" class="btn primary">Empezar</button><button id="confirmNo" class="btn">Cancelar</button></div>
+  </div>
+  <form id="nameForm" class="confirm" hidden autocomplete="off">
+    <label for="heroName" class="small">¿Cómo te llamas?</label>
+    <p class="muted small" style="margin-top:.2rem">Es el nombre que te dirán los vecinos, Juliet y Andreína. Y lo que los enfermos van a repetir.</p>
+    <input id="heroName" class="name-input" maxlength="24" placeholder="León" spellcheck="false">
+    <div class="row"><button type="submit" class="btn primary">Empezar</button><button type="button" id="nameCancel" class="btn">Cancelar</button></div>
+  </form>
+  <section class="endings">
+    <h2 id="endingsCount" class="eyebrow muted"></h2>
+    <div id="endingsList" class="endings-grid"></div>
+  </section>
+</main>
+
+<div id="game" class="game" hidden>
+  <aside class="side">
+    <p class="eyebrow">Puerto Gris</p>
+    <h2>Movimiento es vida</h2>
+    <p class="where"><span id="placeSide"></span><br><span id="whenSide"></span></p>
+    <div id="stats" class="stats"></div>
+    <div class="side-actions">
+      <button id="openJournal" class="btn">Diario&nbsp;<span id="clueCount" class="muted"></span></button>
+      <button id="openMenu" class="btn">Partida</button>
+    </div>
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-row">
+        <div style="min-width:0"><div id="placeTop" class="place"></div><div id="whenTop" class="when"></div></div>
+        <div style="display:flex;gap:.4rem;flex-shrink:0">
+          <button id="openJournalTop" class="btn">Diario&nbsp;<span id="clueCountTop" class="muted"></span></button>
+          <button id="openMenuTop" class="btn">Partida</button>
+        </div>
+      </div>
+      <div id="statsMobile" class="stats mobile"></div>
+    </header>
+    <section id="scene" class="scene" aria-live="polite"></section>
+    <p id="saveNote" class="save-note">La partida se guarda sola en este navegador.</p>
+  </div>
+</div>
+
+<dialog id="journal" aria-label="Diario">
+  <div class="dlg-head"><h2>Diario</h2><button class="btn" data-close>Cerrar</button></div>
+  <div class="tabs"><button data-tab="pistas">Pistas</button><button data-tab="recorrido">Recorrido</button></div>
+  <div id="journalBody"></div>
+</dialog>
+
+<dialog id="menu" aria-label="Partida">
+  <div class="dlg-head"><h2>Partida</h2><button class="btn" data-close>Cerrar</button></div>
+  <div class="menu-list">
+    <button id="export" class="btn">Exportar partida (.json)</button>
+    <label class="btn">Importar partida<input id="import" type="file" accept="application/json,.json" hidden></label>
+    <button id="toTitle" class="btn">Volver al título</button>
+    <button id="restart" class="btn">Empezar de nuevo</button>
+  </div>
+  <p class="muted small" style="margin-top:1rem">La partida se guarda en este navegador después de cada decisión. Exporta una copia para conservarla o seguir en otro dispositivo.</p>
+</dialog>
+
+<p id="toast" class="toast" role="status" hidden></p>
+
+<script>
+/* =========================================================
+   MOVIMIENTO ES VIDA — historia
+   Formato de cada escena (nodo):
+     id, place, when, body(s) -> [párrafos], choices[], ending?, enter?
+   Cada opción: id, label, hint?, next, effects?, effectsOf?(s),
+     flags?, clues?, hidden?(s), enabled?(s), locked?, fork?(s)
+   ========================================================= */
+
+const has = (s, f) => s.flags.includes(f);
+const w = (...a) => a.filter(Boolean);
+
+// Estado de Andreína según lo que León le haya dado (voz, nombre, contacto)
+const andreina = s =>
+  has(s, 'opened_slit') || has(s, 'answered_night') ? 'imprinted'
+  : has(s, 'spoke_door') || has(s, 'called_early') ? 'fraying'
+  : 'clear';
+const exhausted = s => s.stats.fatigue >= 4 && s.stats.provisions <= 0;
+const feverish = s => s.stats.exposure >= 3;
+const hasProof = s => has(s, 'told_brown') || has(s, 'has_log');
+const canDrive = s => !has(s, 'on_foot') && s.stats.fuel >= 1;
+
+const STORY = {
+  start: 'anexo',
+  initialStats: { provisions: 2, fatigue: 1, closeness: 2, signal: 2, exposure: 0, fuel: 3 },
+  maxStats: { provisions: 5, fatigue: 5, closeness: 8, signal: 8, exposure: 3, fuel: 5 },
+  codex: {},
+  nodes: {}
+};
+const N = node => { STORY.nodes[node.id] = node; };
+
+/* ---------- Diario: pistas que el jugador va reuniendo ---------- */
+STORY.codex = {
+  regla: { title: 'La regla del segundo piso',
+    text: 'Dentro de un cuarto o un pasillo cerrado, el afectado se queda con la última voz clara que oye y camina hacia quien la dijo. No muerde ni golpea: empuja. Y no se detiene mientras esa voz siga hablando.' },
+  golpes: { title: 'Los golpes',
+    text: 'Llaman a las puertas con tu mismo ritmo, un segundo tarde. No piden que abras: piden que contestes. Si devuelves el ritmo, les enseñas el tuyo.' },
+  hvac: { title: 'El retorno del anexo',
+    text: 'El lunes a las 3:42 p. m., el retorno de aire del anexo del Comité olía a metal caliente y almendra. Brown te pidió que lo anotaras como «filtro saturado». La libreta tiene su firma y la hora.' },
+  doctrina: { title: 'Movimiento es vida',
+    text: 'Brown dice: no te quedes en un sitio cerrado y no te juntes con mucha gente. La radio oficial dice lo contrario: quédense en casa, digan su nombre en los refugios. Los dos no pueden estar cuidándote a la vez.' },
+  llamada: { title: 'Las cuatro y diez',
+    text: 'Andreína llamó a Juliet desde la verja del anexo. Repitió «¿el edificio?», le dijo que no abriera si llamaban y no colgó. Al fondo se oían golpes. Juliet cortó.' },
+  brown_contra: { title: 'No confíes en el que te dijo que te muevas',
+    text: 'Andreína conoce a Brown y lo contradice. Puede que él tenga razón sobre los cuartos cerrados y mienta en todo lo demás.' },
+  radio_oficial: { title: 'Permanezcan en sus domicilios',
+    text: 'La emisora oficial pide calma, quedarse en casa y decir el nombre en voz alta en los refugios para el conteo. Si esto aprende voces, el conteo es una trampa. Al fondo de la transmisión, alguien repite a la locutora un segundo tarde.' },
+  mara: { title: 'La persiana de Las Palmas',
+    text: 'En la gasolinera, alguien encerrado en el local de al lado repetía lo que oía a través de la persiana. Se agitaba con el crujir de la grava y se quedaba quieto con el motor apagado.' },
+  replica: { title: 'Réplica',
+    text: 'No es el virus que dicen los noticieros. Salió por los ductos de aire del anexo. Se contagia en el aire de los sitios cerrados y por contacto. La primera señal es fiebre y repetir frases ajenas. Después, el afectado se queda con la última voz clara que oye y camina hacia quien la dijo.' },
+  rita: { title: 'La bondad también contesta',
+    text: 'Rita les hablaba a sus pacientes para que no tuvieran miedo. Ellos se quedaron con su frase. Dentro de un cuarto, consolar es regalar tu voz.' },
+  frecuencia: { title: 'La voz de Andreína',
+    text: 'Andreína transmite con el radio de un taxi desde el estacionamiento del edificio Costa, nivel 2. Todavía se corrige cuando se le escapa un nombre. Si repite el eslogan oficial y no se corrige, la frase ya no es suya.' },
+  ortega: { title: 'La capitana Ortega',
+    text: 'Está a cargo del control en la entrada de la capital. Cree en papeles con hora y firma. No cree en gente asustada.' }
+};
+
+/* =========================================================
+   PRÓLOGO
+   ========================================================= */
+
+N({ id: 'anexo', place: 'Azotea del anexo del Comité', when: 'Lunes · 3:40 p. m.',
+  body: () => [
+    'Puerto Gris es una ciudad de puerto, humedad y aires acondicionados. De esos aparatos vives tú: eres {nombre}, técnico de climatización. Te ocupas del edificio Costa, donde vives, y desde hace un año de un contrato mejor pagado: el anexo técnico del Comité Nacional de Salud, dos calles más abajo.',
+    'Hoy te llamaron de urgencia. En la azotea del anexo, la rejilla del retorno de aire está tibia, y lo que sale de ella huele a metal caliente y, por debajo, a almendra amarga. Nunca has olido nada igual en un ducto.',
+    'A tu lado está el doctor Brown, el hombre de la credencial azul que firma las órdenes de trabajo. Se cubre la nariz con un pañuelo y no te mira.',
+    '—Anótalo como filtro saturado —dice—. Cambias el filtro, sellas la compuerta y te vas a tu casa. Y {nombre}: tu pareja es periodista, ¿verdad? Esto no sale de aquí.',
+    'Tienes la libreta de mantenimiento abierta. Todo lo que anotes ahí lleva tu letra, la hora y la firma de Brown al margen.'
+  ],
+  choices: [
+    { id: 'falso', label: 'Escribir lo que te dicta: «filtro saturado».',
+      hint: 'Es su edificio y su firma. No es tu problema.',
+      flags: ['log_false'], clues: ['hvac'], next: 'pasillo' },
+    { id: 'verdad', label: 'Escribir lo que hueles: «metal caliente y almendra en el retorno, 3:42 p. m.»',
+      hint: 'Tu letra. Tu nombre. Tu problema.',
+      flags: ['log_truth'], clues: ['hvac'], next: 'pasillo' }
+  ]
+});
+
+N({ id: 'pasillo', place: 'Edificio Costa · segundo piso', when: 'Martes · 5:10 p. m.',
+  body: s => w(
+    has(s, 'log_truth')
+      ? 'Brown leyó lo que escribiste, se quedó un rato callado y firmó al margen. «Tienes buena letra para meterte en problemas», dijo. Eso fue ayer.'
+      : 'Brown leyó «filtro saturado», asintió y firmó al margen. Te dio las gracias como quien paga una propina. Eso fue ayer.',
+    'Hoy, a las once de la mañana, te llegó un mensaje suyo: «No respondas a los golpes. No hables dentro de cuartos cerrados. Muévete. No se lo digas a la prensa». No lo entendiste. A las cinco y diez, subiendo por la escalera del edificio Costa, empiezas a entenderlo.',
+    'En el segundo piso, doña Iris golpea la puerta del 2C, donde vive su hijo Mateo, de veintitantos años. Golpea con los nudillos: dos cortos, uno largo. Desde adentro le devuelven el mismo ritmo, un segundo tarde.',
+    '—Mateo, abre, mi amor —dice ella.',
+    '«Mateo, abre, mi amor», repite la puerta, con la voz de Mateo y la entonación exacta de Iris.',
+    'La puerta se abre. Mateo sale despacio, sin camisa y con los ojos muy abiertos. No la ataca. Camina hacia ella repitiendo la frase y la empuja con el pecho, suave e implacable, hasta dejarla contra la pared del pasillo. Iris sigue hablándole para calmarlo. Cada palabra que dice lo acerca más.'
+  ),
+  choices: [
+    { id: 'gritar', label: 'Gritarle a Iris que se calle.',
+      hint: 'Una voz clara en un pasillo cerrado.',
+      effects: { exposure: 1 }, flags: ['shouted_iris'], next: 'pasillo_despues' },
+    { id: 'baranda', label: 'Golpear la baranda dos pisos más arriba, lejos de ellos.',
+      hint: 'Un ruido que no sea una voz.',
+      flags: ['banged_rail'], clues: ['golpes'], next: 'pasillo_despues' },
+    { id: 'quieto', label: 'No hacer ningún ruido. Seguir subiendo.',
+      hint: 'Iris no es tu responsabilidad. Mateo tampoco.',
+      flags: ['froze_iris'], next: 'pasillo_despues' }
+  ]
+});
+
+N({ id: 'pasillo_despues', place: 'Escalera de servicio', when: 'Martes · 5:14 p. m.',
+  enter: { clues: ['regla'] },
+  body: s => w(
+    has(s, 'shouted_iris') &&
+      '—¡Cállese! —gritas. Mateo gira la cabeza hacia ti como si alguien hubiera encendido una luz en la escalera. Da un paso en tu dirección. Entonces Iris, asustada, dice «¿{nombre}?», y Mateo vuelve hacia ella. La última voz era la de ella. Subes los escalones de dos en dos con la boca cerrada.',
+    has(s, 'banged_rail') &&
+      'Golpeas el metal con la llave inglesa: tres golpes secos. Mateo se detiene y ladea la cabeza, buscando el sonido. Iris aprovecha, se escurre hacia su apartamento y cierra. Mateo se queda en el pasillo, mirando hacia arriba. No vuelve a moverse mientras no hay ruido.',
+    has(s, 'froze_iris') &&
+      'Subes sin hacer ruido. Detrás de ti, Iris sigue hablándole a su hijo con la voz con que se calma a un niño. Cuando llegas al tercer piso todavía la oyes. Cuando llegas al cuarto, ya no.',
+    'Ahora entiendes el mensaje de Brown. Dentro de un sitio cerrado, el que está enfermo se queda con la última voz clara que oye y camina hacia quien la dijo. No muerde. No se detiene.',
+    'En el cuarto piso deslizas una nota por debajo de la puerta del 4B, donde vive Juliet: «No confíes en nadie del edificio. Si golpean, no respondas. No abras aunque sea una voz conocida». No la firmas. No hace falta.',
+    'Bajas al descanso entre el tercer piso, donde vives con Andreína, y el cuarto. Andreína es periodista; a esta hora debería estar en la redacción. La llamas dos veces. No contesta.'
+  ),
+  choices: [
+    { id: 'seguir', label: 'Seguir.', next: 'escalera_servicio' }
+  ]
+});
+
+/* =========================================================
+   ACTO 1 · EL EDIFICIO
+   ========================================================= */
+
+N({ id: 'escalera_servicio', place: 'Escalera de servicio', when: 'Martes · tarde',
+  body: () => [
+    'El edificio Costa ya no suena como un edificio. No hay televisores ni licuadoras. Hay puertas cerradas y, de vez en cuando, golpes que no son de nadie que conozcas.',
+    'Arriba, en el 4B, Juliet ya habrá leído la nota. Abajo, en el 3A, está tu casa. Andreína sigue sin contestar.'
+  ],
+  choices: [
+    { id: 'subir', label: 'Subir al 4B.', hint: 'Juliet leyó la nota. Te está esperando o te tiene miedo.', next: 'cuatro_b' },
+    { id: 'casa', label: 'Pasar primero por tu apartamento.',
+      hint: 'Andreína debería estar en la redacción. Debería.',
+      effects: { signal: 1 }, flags: ['went_home'], next: 'puerta' },
+    { id: 'llamar', label: 'Llamar a Andreína otra vez, desde aquí.',
+      hint: 'El hueco de una escalera también es un sitio cerrado.', next: 'llamada_escalera' }
+  ]
+});
+
+N({ id: 'llamada_escalera', place: 'Escalera de servicio', when: 'Martes · tarde',
+  body: () => [
+    'El tono suena dos veces. A la tercera, alguien contesta y no dice nada. Después oyes tu propio mensaje del buzón, repetido mal, con tu voz: «Soy {nombre}, déjame un mensaje». Luego, muy cerca del micrófono, tres golpes. El mismo ritmo con que tú tocas una puerta.',
+    'Cuelgas. Ya tienen tu voz grabada. Lo único que no les diste fue lo que pensaste después.'
+  ],
+  choices: [
+    { id: 'no_marcar', label: 'No volver a marcar. Subir con Juliet.',
+      hint: 'Ya saben cómo suenas cuando dejas un mensaje.',
+      effects: { signal: 1, exposure: 1 }, flags: ['called_early'], clues: ['golpes'], next: 'cuatro_b' },
+    { id: 'bajar', label: 'Bajar a tu puerta de todos modos.',
+      effects: { signal: 1 }, flags: ['called_early', 'went_home'], next: 'puerta' }
+  ]
+});
+
+N({ id: 'puerta', place: 'Tu pasillo · 3A', when: 'Martes · tarde',
+  body: () => [
+    'La puerta está cerrada por dentro. Andreína siempre cierra con seguro. Golpeas como siempre —dos cortos, uno largo— y desde adentro te devuelven el ritmo, un segundo tarde.',
+    'Después, su voz, clara y fuera de lugar: «Ya llegué». Una pausa demasiado larga. «Ya llegué».'
+  ],
+  choices: [
+    { id: 'papel', label: 'No abrir. Pasarle un papel: que no le conteste a nadie, ni siquiera a ti.',
+      hint: 'La misma nota que le dejaste a Juliet. Sin voz.',
+      flags: ['note_for_her'], clues: ['golpes'], next: 'cuatro_b' },
+    { id: 'hablar', label: 'Hablarle sin abrir, lo justo para saber si es ella.',
+      hint: 'Cada frase clara le dice dónde estás.', next: 'hablar_puerta' },
+    { id: 'rendija', label: 'Abrir una rendija.',
+      hint: 'Quieres verle la cara. Ella también quiere ver la tuya.', next: 'rendija' }
+  ]
+});
+
+N({ id: 'hablar_puerta', place: 'Tu pasillo · 3A', when: 'Martes · tarde',
+  body: () => [
+    '—Andreína, soy yo. No abras tú tampoco.',
+    'Silencio. Luego te devuelve tu frase, sin el enojo ni el cansancio que ella le pondría: «Soy yo». Otra vez: «Soy yo». No te pregunta por la pelea de anoche. No dice tu nombre. Repite lo último que oyó, y lo último fuiste tú.',
+    'Te apartas antes de corregirla. Corregirla sería darle más voz.'
+  ],
+  choices: [
+    { id: 'irse', label: 'Dejar la puerta y subir al 4B.',
+      effects: { exposure: 1, signal: 2 }, flags: ['spoke_door'], clues: ['golpes'], next: 'cuatro_b' }
+  ]
+});
+
+N({ id: 'rendija', place: 'Tu pasillo · 3A', when: 'Martes · tarde',
+  body: () => [
+    'La cadena está puesta. Por la rendija ves un ojo de Andreína y, detrás, la lámpara del recibidor que ella odia dejar encendida. No está herida. Está atenta, como quien espera el resto de una canción.',
+    'Saca la mano sin violencia, como para saludarte. Te roza la muñeca. Tiene la piel caliente. Dices su nombre sin querer. Ella sonríe con la mitad de la cara que alcanzas a ver y repite, despacio, el nombre que acabas de decir.',
+    'Cierras. La cadena golpea la madera.'
+  ],
+  choices: [
+    { id: 'correr', label: 'Correr al 4B sin mirar atrás.',
+      effects: { exposure: 1, signal: 2 }, flags: ['opened_slit', 'she_has_name'], clues: ['golpes'], next: 'cuatro_b' }
+  ]
+});
+
+N({ id: 'cuatro_b', place: 'Apartamento 4B', when: 'Martes · tarde',
+  body: s => w(
+    'Juliet abre antes del segundo golpe, como si llevara rato parada detrás de la puerta. Es enfermera en el Hospital del Puerto; hoy tenía el día libre. Son vecinos desde hace dos años: cafés en la azotea, paquetes recibidos, una noche larga en que se fue la luz y nadie tuvo prisa por despedirse.',
+    'El 4B huele a jabón de romero y a ropa recién planchada. Tiene tu nota en la mano. El papel está blando de tanto doblarlo.',
+    '—«No confíes en nadie del edificio» —lee, en voz baja—. «Si golpean, no respondas». Sin firma. Qué considerado, {nombre}.',
+    (has(s, 'went_home') || has(s, 'called_early')) && 'Te mira las manos antes que la cara. —¿Y Andreína? ¿La viste?',
+    'Hace meses que las cosas con Andreína no van bien, y Juliet lo sabe porque las paredes del Costa son finas. Nunca lo han hablado.',
+    'Ella podría atrincherarse aquí hasta mañana: tiene arroz y todavía hay presión de agua en el cuarto piso. Pero tú tienes la frase de Brown en la cabeza: muévete.'
+  ),
+  choices: [
+    { id: 'brown', label: 'Contarle lo del anexo, el olor y el mensaje de Brown.',
+      hint: 'Todo lo que sabes. Nada de lo que sientes.',
+      effects: { closeness: 1 }, flags: ['told_brown'], clues: ['doctrina'], next: 'preparativos' },
+    { id: 'sentir', label: 'Decirle que sientes algo por ella, antes de que el día se acabe.',
+      hint: 'No es el momento. Quizás no habrá otro.',
+      effects: { closeness: -1 }, flags: ['rushed'], next: 'preparativos' },
+    { id: 'atrinchera', label: 'Proponerle que se encierren aquí hasta entender más.',
+      hint: 'Agua, arroz, una puerta. Brown diría que es una tumba.',
+      flags: ['wanted_barricade'], next: 'preparativos' },
+    { id: 'solo_golpes', label: 'Hablarle solo de los golpes. Guardarte lo de Brown.',
+      hint: 'Menos pánico. También menos verdad.',
+      flags: ['hid_brown'], clues: ['golpes'], next: 'preparativos' }
+  ]
+});
+
+N({ id: 'preparativos', place: 'Cocina del 4B', when: 'Martes · tarde',
+  body: s => [
+    has(s, 'rushed')
+      ? 'Juliet deja la nota sobre la mesa. —Te creo lo de los golpes. Lo otro no me lo digas hoy. No aquí, no mientras me pides que me vaya contigo. —No es un no para siempre. Pero tampoco te lo va a poner fácil.'
+      : has(s, 'told_brown')
+        ? 'No se ríe. Copia el mensaje de Brown en el reverso de un recibo, con letra de quien anota dosis. —Brown. El del Comité. Andreína lo mencionó una vez, de pasada, como quien no quiere deberle nada a nadie. —Te mira—. Si nos quedamos, se acaba el agua y alguien va a golpear. Si nos vamos, nos vamos ligeros.'
+        : has(s, 'wanted_barricade')
+          ? '—Podemos —dice—. Tengo arroz, y todavía hay agua. Pero no subiste hasta aquí para encerrarte. Se te nota en los hombros. —Pone una mochila vacía sobre la mesa—. Decide como si yo pudiera decirte que no. Porque puedo.'
+          : 'Le hablas de los golpes y de la gente que deja de contestar con su propia voz. Nada del anexo, nada de Brown. Juliet asiente despacio, que es su manera de guardarse una pregunta. —Entonces no nos quedamos a comprobarlo.',
+    'En la mochila caben agua, arroz, una linterna y el botiquín pequeño de Juliet. En el sótano, en el cuarto de mantenimiento, está el botiquín grande del edificio. La llave la tienes tú. Pero bajar cuesta tiempo, y el tiempo hace ruido.'
+  ],
+  choices: [
+    { id: 'botiquin', label: 'Bajar al cuarto de mantenimiento por el botiquín grande.',
+      hint: 'La llave es tuya. Tu libreta también está ahí.', next: 'botiquin' },
+    { id: 'avisos', label: 'Avisar por escrito a los otros pisos, sin hablar con nadie.',
+      hint: 'Minutos de más. Gente que quizás lea.',
+      effects: { fatigue: 1, closeness: 1 }, flags: ['warned_neighbors'], next: 'avisos' },
+    { id: 'salir', label: 'Salir ya, con lo que hay.', next: 'escaleras_incendio' }
+  ]
+});
+
+N({ id: 'botiquin', place: 'Cuarto de mantenimiento · sótano', when: 'Martes · tarde',
+  body: s => w(
+    'Huele a detergente y, muy débil, a la misma almendra del anexo, pegada a la ropa de trabajo que dejaste colgada ayer. Llenas el botiquín: gasas, yodo, antitérmico, sales de rehidratación.',
+    'En el estante está tu libreta de mantenimiento, con la anotación del lunes y la firma de Brown al margen. Te la guardas. Todavía no sabes si es una prueba o un problema.',
+    has(s, 'log_truth')
+      ? 'La relees: «metal caliente y almendra, 3:42 p. m.», y la firma de Brown debajo. Él firmó la verdad. Eso puede valer mucho, o puede costarte caro.'
+      : 'La relees: «filtro saturado», y la firma de Brown debajo. Tu letra contando una mentira ajena.',
+    'Del otro lado de la pared, algo repite el golpe con que ayer revisaste una tubería. Desde este lado nadie contesta. Por eso sigues siendo tú.'
+  ),
+  choices: [
+    { id: 'subir', label: 'Volver por Juliet y salir por la escalera de incendios.',
+      effects: { provisions: 2 }, flags: ['has_log', 'has_kit'], clues: ['hvac'], next: 'escaleras_incendio' }
+  ]
+});
+
+N({ id: 'avisos', place: 'Pasillos del Costa', when: 'Martes · tarde',
+  body: () => [
+    'Metes la misma frase por debajo de tres puertas: «No contesten a los golpes. Ni siquiera si es una voz conocida». En el 3C alguien arrastra una silla justo cuando entra el papel. No dices nada.',
+    'Juliet te espera con la mochila cerrada. No te reclama los minutos. Te toca el codo, una vez, como se toca a alguien que vuelve de un mandado peligroso.'
+  ],
+  choices: [
+    { id: 'bajar', label: 'Bajar.', clues: ['golpes'], next: 'escaleras_incendio' }
+  ]
+});
+
+N({ id: 'escaleras_incendio', place: 'Escalera de incendios', when: 'Martes · última luz',
+  body: () => [
+    'Por la escalera de incendios entra el viento sucio de la calle. En el descanso del segundo piso está don Marcelo, el vecino del 2A, en pijama y descalzo, con una taza vacía en la mano, como si se le hubiera olvidado el café a mitad del gesto.',
+    '—¿Me repites cómo te llamas? —pregunta, amable—. Lo tengo en la punta de la lengua y no me sale.',
+    'Juliet te aprieta la correa de la mochila. No es un tirón. Es una instrucción.'
+  ],
+  choices: [
+    { id: 'callar', label: 'Seguir sin decir nada. Ni siquiera «perdón».',
+      hint: 'La buena educación también es una voz.', next: 'calle' },
+    { id: 'nombre', label: 'Decirle tu nombre. Lleva años siendo tu vecino.',
+      effects: { exposure: 1 }, flags: ['answered_marcelo'], next: 'calle' },
+    { id: 'agua', label: 'Dejarle media botella de agua sin decir una palabra.',
+      hint: 'La sed no se contesta con un nombre.',
+      effects: { provisions: -1, closeness: 1 }, flags: ['mercy'],
+      enabled: s => s.stats.provisions >= 1, locked: 'No te sobra ni el agua.', next: 'calle' }
+  ]
+});
+
+/* =========================================================
+   ACTO 2 · LA CARRETERA
+   ========================================================= */
+
+N({ id: 'calle', place: 'Calles de Puerto Gris', when: 'Martes · atardecer',
+  body: () => [
+    'Puerto Gris no está en llamas. Sería más fácil de creer. La gente camina, y algunos caminan hacia una voz que tú no oyes, con cara de ir tarde a algún lado. Un carro cruza la avenida con las puertas abiertas y el radio a todo volumen. La locutora pide calma: quédense en sus casas, no salgan, no saturen las líneas.',
+    'Brown dijo lo contrario. Media cuadra más adelante hay una camioneta gris con las llaves puestas y el tanque a poco más de la mitad. Adentro no hay sangre. Hay un termo frío y un mapa de la provincia manchado de café.'
+  ],
+  choices: [
+    { id: 'radio', label: 'Llevarte el radio portátil del carro abandonado.',
+      hint: 'Pesa. También informa. Y a veces repite.',
+      flags: ['took_radio'], clues: ['radio_oficial'], next: 'camioneta' },
+    { id: 'nada', label: 'No tocar nada que haga ruido. Solo la camioneta.', next: 'camioneta' }
+  ]
+});
+
+N({ id: 'camioneta', place: 'Carretera vieja del norte', when: 'Martes · horas después',
+  enter: { effects: { fuel: -1 } },
+  body: s => w(
+    'Manejas hasta que el puerto desaparece del retrovisor. Juliet no enciende nada. El campo es feo de una manera que tranquiliza: alambradas, un anuncio de fertilizante, ningún golpe.',
+    has(s, 'took_radio') && 'El radio va en el piso, apagado, como un animal al que conviene no despertar.',
+    'Cuando el cielo se pone del color del papel viejo, Juliet habla sin mirarte. —Oye. Hay algo que no te he contado. Andreína me llamó antes de que llegaras.',
+    'El motor sigue. Tus manos también.'
+  ),
+  choices: [
+    { id: 'exacto', label: '«¿Qué dijo, exactamente?»',
+      hint: 'La pregunta de quien quiere sobrevivir, no de quien quiere tener razón.',
+      effects: { closeness: 1 }, flags: ['asked_exact'], next: 'relato' },
+    { id: 'porque', label: '«¿Por qué esperaste hasta ahora?»',
+      effects: { closeness: -1 }, flags: ['asked_why'], next: 'relato' },
+    { id: 'bien', label: '«¿Está bien?»',
+      effects: { signal: 1 }, flags: ['asked_ok'], next: 'relato' },
+    { id: 'silencio', label: 'No contestar. Seguir manejando.',
+      effects: { fatigue: 1 }, flags: ['stayed_silent'], next: 'relato_corto' }
+  ]
+});
+
+N({ id: 'relato', place: 'Carretera vieja del norte', when: 'Martes · anochecer',
+  enter: { clues: ['llamada'] },
+  // Si León le ocultó lo de Brown, Juliet lo descubre aquí
+  onEnter: s => has(s, 'hid_brown') && !has(s, 'caught_hiding')
+    ? { effects: { closeness: -1 }, flags: ['caught_hiding'], clues: ['brown_contra'] }
+    : has(s, 'told_brown') ? { clues: ['brown_contra'] } : null,
+  body: s => w(
+    '—A las cuatro y diez. Yo estaba planchando. Me dijo que estaba en la verja del anexo, que había ido a cubrir algo raro y no la dejaban entrar. Me preguntó si tú estabas en el edificio.',
+    has(s, 'asked_exact')
+      ? '—Te lo digo palabra por palabra porque si no, te vas a inventar una llamada más amable.'
+      : has(s, 'asked_why')
+        ? '—Porque en el 4B me estabas mirando como si yo fuera la salida. Quería decírtelo donde pudieras oírme sin poder tocar la puerta de nadie.'
+        : '—No lo sé. Por eso no te lo dije en la cocina. Si te digo que no lo sé, das la vuelta. Y no sé si volver mata a alguien.',
+    'Juliet no aparta la vista de la cuneta. —Le pregunté: «¿El edificio?». Y me lo devolvió: «¿El edificio?». Dos veces, como si le gustara cómo sonaba. Después me dijo: no abras si tocan. No colgó. Al fondo se oían golpes. Colgué yo.',
+    'Traga saliva. —Y dijo un nombre. Brown. Dijo: no confíes en el que te dijo que te muevas.',
+    has(s, 'caught_hiding') && 'Entonces te mira de verdad. —Tú ya lo conocías. Se te acaba de mover la cara.',
+    has(s, 'told_brown') && '—Así que Brown te dice que te muevas y Andreína dice que no le creas a Brown —dice—. Y yo en el medio, planchando.',
+    (has(s, 'spoke_door') || has(s, 'opened_slit')) && '—Y tú ya bajaste a tu puerta. Hueles a tu pasillo. No me lo cuentes si no puedes.'
+  ),
+  choices: [
+    { id: 'gracias', label: '«Gracias por colgar. No le diste más voz.»',
+      effects: { closeness: 1 }, flags: ['thanked_cut'], next: 'gasolinera' },
+    { id: 'telefono', label: '«Enséñame la llamada. No voy a marcar.»',
+      flags: ['saw_log'], next: 'gasolinera' },
+    { id: 'volvemos', label: '«Cuando podamos, volvemos por ella.»',
+      effects: { signal: 2, closeness: -1 }, flags: ['plans_return'], next: 'gasolinera' }
+  ]
+});
+
+N({ id: 'relato_corto', place: 'Carretera vieja del norte', when: 'Martes · anochecer',
+  enter: { clues: ['llamada'] },
+  onEnter: s => has(s, 'told_brown') ? { clues: ['brown_contra'] } : null,
+  body: s => w(
+    'Juliet espera un kilómetro. Después habla igual, pero más corto, como quien deja un mensaje que no espera que contesten.',
+    '—A las cuatro y diez. Estaba en la verja del anexo, cubriendo algo. Repetía lo que yo le decía. Me dijo que no abriera si tocaban. Colgué yo, porque la llamada no se colgaba sola.',
+    has(s, 'told_brown')
+      ? '—Y nombró a Brown. Dijo que no confiaras en el que te dijo que te movieras. Como no dijiste nada, el resto me lo guardo. Si quieres más, paras y me lo pides.'
+      : 'No dice más nombres. Tu silencio le enseñó a medir lo que entrega.'
+  ),
+  choices: [
+    { id: 'repetir', label: 'Orillarte y pedirle que te lo cuente despacio.',
+      effects: { closeness: 1 }, flags: ['asked_repeat'], next: 'gasolinera' },
+    { id: 'seguir', label: 'Seguir. Que el motor llene el silencio.',
+      effects: { fatigue: 1 }, flags: ['partial_story'], next: 'gasolinera' }
+  ]
+});
+
+// Escena tomada de la opción A: Mara y la persiana
+N({ id: 'gasolinera', place: 'Gasolinera Las Palmas', when: 'Martes · 7:20 p. m.',
+  enter: { clues: ['mara'] },
+  body: s => w(
+    'La aguja de la gasolina baja más rápido de lo que esperabas. En un cruce aparece una gasolinera con dos luces encendidas, un taller y una tiendita. Detrás del cristal, una silueta no corre: se queda mirando la carretera.',
+    'Sale una mujer de unos cuarenta años con una linterna. En la camisa lleva bordado MARA. Mantiene la puerta cerrada a su espalda.',
+    '—La bomba no funciona. Tengo un galón de reserva y no lo voy a regalar. Mi hermano está en el taller con el tobillo abierto. Necesito medicinas.',
+    'No parece hostil. Parece llevar demasiadas horas decidiendo a quién abrirle.',
+    'Entonces, en el local de al lado, algo golpea la persiana metálica. Tres veces. Una pausa. Otras tres. Mara apaga la linterna y baja la voz. —Lleva ahí desde las cinco. A veces habla. A veces repite lo que oye.',
+    'Desde la persiana llega una voz quebrada: «A veces habla».',
+    has(s, 'has_kit')
+      ? 'Juliet mira la mochila, donde va el botiquín grande. Luego te mira a ti. —Nosotros también lo vamos a necesitar —dice, muy bajito—. Pero él lo necesita hoy.'
+      : 'Juliet mira la mochila, donde solo va su botiquín pequeño. No dice nada.'
+  ),
+  choices: [
+    { id: 'botiquin', label: 'Cambiar medicinas y gasas por el galón.',
+      hint: 'Pierdes provisiones. Ganas gasolina y una deuda a tu favor.',
+      enabled: s => s.stats.provisions >= 2, locked: 'No tienen tanto que ofrecer.',
+      effects: { provisions: -2, fuel: 2, closeness: 1 }, flags: ['helped_mara'], next: 'anochecer' },
+    { id: 'racion', label: 'Ofrecer arroz y el antitérmico por medio galón.',
+      enabled: s => s.stats.provisions >= 1, locked: 'No queda nada que ofrecer.',
+      effects: { provisions: -1, fuel: 1 }, flags: ['traded_mara'], next: 'anochecer' },
+    { id: 'seguir', label: 'Dar las gracias en voz baja y volver a la camioneta.',
+      hint: 'Ni tu medicina ni tu voz se quedan aquí.',
+      effects: { fatigue: 1 }, next: 'anochecer' }
+  ]
+});
+
+N({ id: 'anochecer', place: 'Un cruce sin nombre', when: 'Martes · noche',
+  body: s => w(
+    has(s, 'helped_mara')
+      ? 'Mara cumplió. Antes de que se fueran, les dijo que no se metieran en el polideportivo de la capital: «Allí están contando gente en voz alta».'
+      : has(s, 'traded_mara')
+        ? 'Mara les echó medio galón y cerró la puerta sin despedirse. Era un trato, no un favor.'
+        : 'Dejaron atrás la gasolinera. La persiana siguió repitiendo «a veces habla» hasta que dejaron de oírla.',
+    'El mapa manchado de café tiene tres ideas malas y un espacio en blanco.',
+    'A la derecha, la carretera hacia la capital: más asfalto, más controles, el rumbo que Brown dijo que era el suyo. De frente, un camino de tierra que Juliet reconoce: hizo una temporada en un puesto de salud que casi nunca tiene médico. A la izquierda, el mapa no dice nada, y esta noche eso parece un argumento.',
+    has(s, 'took_radio') && 'Juliet enciende el radio un segundo. La misma locutora, la misma frase. Al fondo, alguien de la emisora la repite con su voz, un poco tarde. Juliet lo apaga.'
+  ),
+  choices: [
+    { id: 'capital', label: 'Seguir hacia la capital.', hint: 'Controles, refugios, el Comité. O lo que quede de él.',
+      hidden: exhausted, enabled: s => s.stats.fuel >= 2, locked: 'La gasolina no alcanza.',
+      effects: { fuel: -1 }, next: 'capital_control' },
+    { id: 'puesto', label: 'Tomar el camino del puesto de salud.', hint: 'Juliet conoce la puerta. No sabe quién la abre ahora.',
+      hidden: exhausted, enabled: s => s.stats.fuel >= 1, locked: 'La gasolina no alcanza.',
+      effects: { fuel: -1 }, next: 'clinica' },
+    { id: 'cobertizo', label: 'Meterse por el camino sin nombre y parar en el primer cobertizo.',
+      hint: 'Parar es justo lo que Brown prohibió. El cuerpo lo pide igual.',
+      hidden: exhausted, next: 'granero' },
+    { id: 'brown', label: 'Llamar a Brown antes de decidir.', hint: 'Una llamada dice dónde estás.',
+      hidden: s => exhausted(s) || !hasProof(s) || has(s, 'brown_call'), next: 'brown_call' },
+    { id: 'orilla', label: 'Ya no pueden más. Parar aquí mismo.',
+      hidden: s => !exhausted(s), next: 'ending_orilla' }
+  ]
+});
+
+N({ id: 'brown_call', place: 'Orilla de la carretera', when: 'Martes · noche',
+  enter: { flags: ['brown_call'], clues: ['replica', 'doctrina'] },
+  body: () => [
+    'Contesta al segundo tono, como si tuviera el celular boca arriba sobre la mesa. —No paren en los pueblos. Juntarse con gente los vuelve fáciles de encontrar. —Es una frase ensayada, dicha ya a varias personas—. Si tienes la libreta, no la lleves a la capital. Entiérrala.',
+    '—¿Enterrarla dónde? ¿Qué salió por ese ducto?',
+    'Una pausa pequeña, humana. —Le decimos Réplica. No es el virus de los noticieros. No le des tu voz a nadie dentro de un cuarto cerrado. Y no me vuelvas a llamar: cada llamada dice dónde estás. —Cuelga. El número se queda iluminado en la pantalla un segundo de más.'
+  ],
+  choices: [
+    { id: 'puesto_off', label: 'Apagar el celular y tomar el camino del puesto.',
+      enabled: s => s.stats.fuel >= 1, locked: 'La gasolina no alcanza.',
+      effects: { fuel: -1 }, flags: ['phone_off'], next: 'clinica' },
+    { id: 'cobertizo_off', label: 'Apagarlo y buscar un cobertizo.', flags: ['phone_off'], next: 'granero' },
+    { id: 'capital_on', label: 'Dejarlo encendido. Seguir hacia la capital.',
+      hint: 'Que los encuentre quien tenga una salida, no quien tenga hambre de voces.',
+      enabled: s => s.stats.fuel >= 2, locked: 'La gasolina no alcanza.',
+      effects: { fuel: -1 }, flags: ['phone_on'], next: 'capital_control' },
+    { id: 'cobertizo_on', label: 'Dejarlo encendido y esconderse igual.',
+      hint: 'El mapa ya no es solo de ustedes.', flags: ['phone_on'], next: 'granero' }
+  ]
+});
+
+N({ id: 'granero', place: 'Cobertizo', when: 'Martes · noche',
+  enter: { effects: { provisions: -1, fatigue: -1 } },
+  body: s => w(
+    'El cobertizo era de herramientas y ahora es de polvo y de un farol que todavía acepta pilas. Cierras la puerta con un alambre. Afuera, grillos. Adentro, el ruido pequeño de dos personas tratando de no parecer un grupo.',
+    'Juliet reparte el arroz frío con la tapa del termo. No habla de Andreína. Habla del farol, de la puerta, de los turnos para dormir. Es su manera de preguntarte cómo estás sin obligarte a decir lo que sientes.',
+    has(s, 'rushed')
+      ? 'Aun así deja un metro de piso entre su manta y la tuya. Ese metro dice bastante.'
+      : s.stats.closeness >= 4
+        ? 'Cuando te pasa el agua, sus dedos no se apartan enseguida de la botella. Tampoco avanzan.'
+        : 'Come de su lado del termo. Tú del tuyo. No es frialdad. Es una distancia que todavía les sirve.'
+  ),
+  choices: [
+    { id: 'cuidar', label: 'Tomarle la temperatura y ofrecerle el antitérmico.',
+      hint: 'Un gesto de oficio, no una excusa.',
+      enabled: s => s.stats.provisions >= 1, locked: 'No queda nada que ofrecer.',
+      effects: { provisions: -1, closeness: 1 }, flags: ['cared'], next: 'golpe_noche' },
+    { id: 'manana', label: 'Preguntarle qué haría en una mañana normal, si esto se acabara mañana.',
+      hint: 'Una pregunta que no es sobre sobrevivir.',
+      effects: { closeness: 1 }, flags: ['asked_morning'], next: 'golpe_noche' },
+    { id: 'verdad', label: 'Contarle la verdad sobre Andreína, sin pedirle que ocupe su lugar.',
+      hint: 'Hace meses que no están bien. Subir al 4B no fue un reemplazo.',
+      effectsOf: s => ({ closeness: has(s, 'rushed') ? 0 : 2 }), flags: ['said_truth'], next: 'golpe_noche' },
+    { id: 'turnos', label: 'Organizar turnos para dormir, espalda con espalda.',
+      hint: 'Vigilar es una manera de estar cerca sin tocarse.',
+      effects: { closeness: 1, fatigue: -1 }, flags: ['turns'], next: 'golpe_noche' },
+    { id: 'mano', label: 'Buscar su mano.',
+      enabled: s => s.stats.closeness >= 4 && !has(s, 'rushed'), locked: 'Todavía no. Se notaría el apuro.',
+      effects: { closeness: 1 }, flags: ['hand'], next: 'golpe_noche' }
+  ]
+});
+
+N({ id: 'golpe_noche', place: 'Cobertizo', when: 'Miércoles · madrugada',
+  body: s => w(
+    has(s, 'cared') && 'Le tomas la temperatura como se hace en el trabajo, no como quien pide permiso. No tiene fiebre. El antitérmico vuelve al bolsillo. Juliet dice «gracias» en el tono de quien acepta un servicio, y no agrega nada.',
+    has(s, 'asked_morning') && 'Lo piensa en serio. —Comprar pan. Ir a casa de mi hermana y dejar que me hable media hora de cualquier tontería. —Gira la tapa del termo entre los dedos—. Siempre digo que quiero viajar. Ahora me conformaría con saber que mi gente está durmiendo en su cama. —Te devuelve la pregunta. Le contestas algo pequeño y verdadero, y ella se ríe por primera vez en todo el día.',
+    has(s, 'said_truth') && (has(s, 'rushed')
+      ? 'Le cuentas que hace meses que Andreína y tú no están bien, y que no subiste al 4B para reemplazarla. Juliet escucha. —Eso ya me lo dijiste, en peor momento. Por lo menos ahora no me pides nada. —No se acerca. Tampoco se va al otro extremo del cobertizo.'
+      : 'Le cuentas que hace meses que Andreína y tú no están bien, y que no subiste al 4B para que ella ocupara un lugar. Juliet tarda en contestar. —Gracias por no pedirme que te responda a eso. —El farol cruje. Se quedan en el mismo piso, un poco menos desconocidos.'),
+    has(s, 'turns') && 'Acuerdan los turnos sin hacerlo romántico. Espalda con espalda, el farol en el medio. Juliet respira como quien por fin puede cerrar los ojos un cuarto de hora.',
+    has(s, 'hand') && 'Buscas su mano. No la retira. Tampoco entrelaza los dedos: los deja contra los tuyos, quietos. Ninguno le pone nombre. Se quedan callados para no estropearlo.',
+    'Duermes a medias. A las dos, algo toca la madera. No es un puño. Es el ritmo de alguien que llama a una casa donde cree tener derecho a entrar.',
+    has(s, 'phone_on') && 'Tu celular vibra una vez contra el piso y se calla. Lo de afuera no llegó por casualidad. Vino a un punto exacto.',
+    has(s, 'she_has_name')
+      ? 'Dice tu nombre. Lo dice bien, como Andreína en un día bueno, y lo repite idéntico, sin respirar entre una vez y otra.'
+      : has(s, 'answered_marcelo')
+        ? 'Dice tu nombre con la cortesía de don Marcelo, un poco tarde, como si lo estuviera leyendo.'
+        : has(s, 'plans_return') || andreina(s) !== 'clear'
+          ? '—Juliet —dice. No es la voz de Juliet. Es la voz de las cuatro y diez, usando el nombre que Juliet dijo al contestar el teléfono.'
+          : '—¿Hay alguien? —Nadie responde. Entonces, más contenta—: ¿Hay alguien?',
+    'Juliet niega con la cabeza una sola vez.'
+  ),
+  choices: [
+    { id: 'callar', label: 'No contestar. Ni un crujido.', flags: ['silent_night'], next: 'amanecer' },
+    { id: 'quien', label: 'Preguntar quién es.', effects: { exposure: 1, signal: 1 }, flags: ['answered_night'], next: 'amanecer' },
+    { id: 'huir', label: 'Salir por detrás y dejar el farol encendido.', effects: { fatigue: 1 }, flags: ['fled_night'], next: 'amanecer' }
+  ]
+});
+
+N({ id: 'amanecer', place: 'Camino de tierra', when: 'Miércoles · amanecer',
+  // Si se llevaron el radio, al amanecer encuentran la transmisión de Andreína
+  onEnter: s => has(s, 'took_radio') && !has(s, 'heard_broadcast')
+    ? { flags: ['heard_broadcast'], clues: ['frecuencia'], effects: { signal: 1 } } : null,
+  body: s => w(
+    has(s, 'fled_night')
+      ? 'Salieron por detrás y el farol se quedó encendido, mintiendo. Nadie los alcanzó, o nadie quiso que lo vieran alcanzarlos.'
+      : has(s, 'answered_night')
+        ? 'La voz los siguió un tramo y se perdió donde el camino se abre. Moverse la despistó. También le enseñó que ustedes contestan.'
+        : 'Nadie los siguió hasta la cerca, o nadie quiso dejarse ver. El campo humea con un frío limpio.',
+    s.stats.provisions <= 0
+      ? 'No queda nada que repartir. El hambre es un ruido más, y Juliet no lo convierte en queja.'
+      : 'Comen lo que queda sin hacer de eso una ceremonia.',
+    has(s, 'took_radio') &&
+      'Juliet recorre el dial del radio buscando otra cosa que no sea la locutora oficial. Entre dos estáticas aparece una voz que conoces mejor que la tuya: Andreína. Transmite con el radio de un taxi desde el estacionamiento del edificio Costa, nivel 2. Está ronca y es ella. Dice: no contesten a los golpes, no digan su nombre, no se queden en cuartos cerrados. Dice el tuyo una vez —«{nombre}»— y se corrige, furiosa: «No. Nombres no». Después repite el eslogan oficial, una sola vez, y corta.',
+    feverish(s)
+      ? 'Juliet dice que queda poca agua. Tú lo repites. Ella se detiene. No es un eco del camino: es tu boca, un segundo tarde.'
+      : 'El mapa sigue teniendo tres ideas. Con sueño, todas parecen posibles.'
+  ),
+  choices: [
+    { id: 'fiebre', label: 'Decirle que estás repitiendo sus frases.', hidden: s => !feverish(s) || exhausted(s), next: 'fiebre' },
+    { id: 'orilla', label: 'Sentarse. El cuerpo ya decidió.', hidden: s => !exhausted(s), next: 'ending_orilla' },
+    { id: 'capital', label: 'Hacia la capital, mientras la gasolina alcance.',
+      hidden: s => feverish(s) || exhausted(s), enabled: s => s.stats.fuel >= 2, locked: 'La gasolina no alcanza.',
+      effects: { fuel: -1 }, next: 'capital_control' },
+    { id: 'puesto', label: 'Al puesto de salud que Juliet recuerda.',
+      hidden: s => feverish(s) || exhausted(s), enabled: s => s.stats.fuel >= 1, locked: 'La gasolina no alcanza.',
+      effects: { fuel: -1 }, next: 'clinica' },
+    { id: 'ciudad', label: 'Volver a Puerto Gris, por Andreína.',
+      hint: s => has(s, 'heard_broadcast') ? 'Todavía se corrige. Por ahora.' : null,
+      hidden: s => feverish(s) || exhausted(s), enabled: s => s.stats.fuel >= 2, locked: 'La gasolina no alcanza.',
+      effects: { fuel: -1, signal: 1 }, flags: ['heading_back'], next: 'regreso' },
+    { id: 'pie', label: 'Dejar la camioneta y seguir a pie.', hint: 'Sin gasolina no hay rumbo largo. Hay piernas.',
+      hidden: s => feverish(s) || exhausted(s) || s.stats.fuel >= 2,
+      effects: { fatigue: 2, fuel: -5 }, flags: ['on_foot'], next: 'camino_libre' }
+  ]
+});
+
+N({ id: 'fiebre', place: 'Camino', when: 'Miércoles',
+  body: s => w(
+    'No ves doble. Es peor: Juliet dice «nos queda agua» y la frase se te queda en la boca como un caramelo. La repites. Ella se detiene en medio del camino.',
+    '—Otra vez —te pide. Y se arrepiente, porque obedeces.',
+    'La puerta, los nombres, los golpes que contestaste: algo tuvo tiempo de aprenderte. Tienes fiebre. Si Juliet se queda hablándote, su voz puede ser la última que te quede clara. Y vas a caminar hacia ella aunque la tengas enfrente.',
+    s.stats.closeness >= 5
+      ? 'Te mira como en la cocina del 4B, cuando todavía podías elegir qué decir. Ahora es ella la que elige qué no va a decirte.'
+      : 'No hay romanticismo en su cara. Hay un cálculo de enfermera y, debajo, el susto de perder a alguien a quien ya se había acostumbrado.'
+  ),
+  choices: [
+    { id: 'escribir', label: 'Escribirle que se vaya. Sin voz. Sin tu nombre.', next: 'ending_sin_voz' },
+    { id: 'quedarte', label: 'Pedirle que siga a tu lado, aunque tenga que callarse.', next: 'ending_ultima_frase' }
+  ]
+});
+
+/* =========================================================
+   ACTO 3 · LAS SALIDAS
+   ========================================================= */
+
+const atParking = s => has(s, 'heard_broadcast');
+
+N({ id: 'capital_control', place: 'Control en la entrada de la capital', when: 'Miércoles',
+  enter: { clues: ['ortega'] },
+  body: s => w(
+    'No son científicos. Son cuatro soldados jóvenes, una mesa plegable y la capitana Ortega, una mujer flaca con la voz gastada de tanto dar órdenes. Detrás, un polideportivo con las puertas abiertas: gente sentada en el piso, consolándose, diciendo su nombre en voz alta para que el conteo cuadre.',
+    has(s, 'helped_mara') && 'Recuerdas lo que dijo Mara: allí están contando gente en voz alta.',
+    'Un soldado te pide las llaves para estacionar los vehículos. Juliet mira el polideportivo y después el mapa. A lo lejos, sobre una loma, hay una caseta con una antena. La mancha de café del mapa cae justo en ese tramo.'
+  ),
+  choices: [
+    { id: 'libreta', label: 'Entregarle a la capitana tu libreta de mantenimiento.',
+      hint: 'La hora, tu letra y la firma de Brown.',
+      hidden: s => !has(s, 'has_log'), flags: ['showed_log'], next: 'pabellon' },
+    { id: 'mensaje', label: 'Enseñarle el mensaje de Brown en tu celular.',
+      hint: 'El nombre de Brown asusta más que tu cara.',
+      hidden: s => !hasProof(s), flags: ['showed_brown'], next: 'relevo' },
+    { id: 'juliet', label: 'Dejar que Juliet hable como personal de salud.',
+      hint: 'Es un frente común. Si la contradices, se cae.',
+      enabled: s => s.stats.closeness >= 3 || has(s, 'cared'), locked: 'Todavía no son un equipo.',
+      flags: ['juliet_bluff'], next: 'relevo' },
+    { id: 'cuneta', label: 'Abandonar la camioneta y bajar por la cuneta.',
+      hint: 'En el polideportivo ya están diciendo nombres. No entren en esa conversación.',
+      effects: { fatigue: 1, fuel: -5 }, flags: ['ditched', 'on_foot'], next: 'relevo' }
+  ]
+});
+
+// Escena nueva: la libreta llega a manos de alguien con autoridad
+N({ id: 'pabellon', place: 'Puerta del polideportivo', when: 'Miércoles · mediodía',
+  body: s => has(s, 'log_truth')
+    ? [
+      'Ortega lee la libreta dos veces. «Metal caliente y almendra en el retorno, 3:42 p. m.». La firma de Brown al margen. Se le endurece la cara.',
+      '—Esto es del lunes —dice—. A mí me avisaron el martes en la noche. Y me mandaron a contar gente.',
+      'Mira el polideportivo. Allá adentro hay doscientas personas diciendo su nombre en voz alta, y por lo menos tres que se quedaron demasiado quietas, sentadas muy derechas, repitiendo lo que dice el que tienen al lado.',
+      '—Si les grito que se callen, me aprenden a mí —dice Ortega, sin bajar la mirada—. Usted sabe de esto más que yo. ¿Cómo los saco?'
+    ]
+    : [
+      'Ortega lee la libreta. «Filtro saturado». La firma de Brown al margen. Te la devuelve.',
+      '—Aquí dice que usted cambió un filtro. Con su letra.',
+      'Le explicas que no fue eso, que Brown te dictó la frase, que el olor era otro. Te escucha con la paciencia de quien ya ha oído a cien personas asustadas desde ayer.',
+      '—Tengo doscientas personas ahí adentro y una orden de contarlas. Un papel que dice «filtro» no me sirve para desobedecerla. —Señala la loma—. Si quiere ir a la antena, vaya. Yo no lo vi.'
+    ],
+  choices: [
+    { id: 'pizarra', label: 'Escribir la regla en grande y sacar a la gente en silencio, por grupos.',
+      hint: 'Sin una sola voz. Lleva horas.', hidden: s => !has(s, 'log_truth'), next: 'ending_registro' },
+    { id: 'gritar', label: 'Pararte en la puerta y decir la regla en voz alta, una sola vez.',
+      hint: 'Doscientas personas se callan. Tres se quedan con tu voz.',
+      hidden: s => !has(s, 'log_truth'), effects: { exposure: 2 }, next: 'ending_voz_pabellon' },
+    { id: 'dejar', label: 'Dejarle la libreta a Ortega y seguir hacia la antena.',
+      hint: 'Que la prueba la lleve alguien con uniforme.',
+      hidden: s => !has(s, 'log_truth'), flags: ['gave_log'], next: 'relevo' },
+    { id: 'irse', label: 'Guardar la libreta e irse hacia la antena.',
+      hidden: s => has(s, 'log_truth'), effects: { fatigue: 1 }, flags: ['log_refused'], next: 'relevo' }
+  ]
+});
+
+N({ id: 'relevo', place: 'Caseta de la antena', when: 'Miércoles · mediodía',
+  enter: { clues: ['replica'] },
+  body: s => w(
+    has(s, 'ditched')
+      ? 'Llegan llenos de lodo, sin camioneta. El camino de servicio estaba donde el café manchaba el mapa. La caseta huele a ozono y a alguien que se fue con prisa.'
+      : has(s, 'juliet_bluff')
+        ? 'Juliet habló del puesto de salud, de no mezclar a los sanos con el polideportivo, de un médico al otro lado de la antena. El cabo quiso retenerla. Ella no levantó la voz. Tú no la contradijiste. Los dejaron rodear el control.'
+        : has(s, 'gave_log')
+          ? 'Ortega se quedó con la libreta y les dio paso sin preguntar más. Detrás de ustedes, por primera vez desde ayer, el polideportivo hace silencio.'
+          : has(s, 'log_refused')
+            ? 'Subiste la loma con la libreta en el bolsillo y la palabra «filtro» pesándote más que la mochila.'
+            : 'El nombre de Brown le arruinó el día al cabo. No lo entendió. Entendió que no quería firmar nada con ese nombre. Les señaló la antena como quien señala el problema de otro.',
+    'Brown no está. Dejó una grabadora sobre una caja de fusibles, y la grabadora habla con voz de ensayo:',
+    '«Si oyes esto, lo del anexo no fue un filtro. Réplica salió por los ductos del anexo y llegó al edificio Costa y a otros dos. No es rabia. Es impronta. En un sitio cerrado, el afectado se queda con la última voz clara y camina hacia quien la dijo. Por eso les dije que se movieran: un refugio lleno de voces es una trampa. La libreta prueba la hora y mi firma. Si la llevas a la capital, el Comité la va a archivar contigo adentro. Entiérrala. O úsala, si todavía crees que un papel salva a alguien».',
+    'Escrito a lápiz sobre la caja: una lancha, kilómetro 40, un solo puesto, antes de que oscurezca.'
+  ),
+  choices: [
+    { id: 'quedar', label: 'Quedarte con la grabadora.', flags: ['kept_recorder'], next: 'un_asiento' },
+    { id: 'enterrar', label: 'Enterrarla, como él pide.', hint: 'Ya oíste el kilómetro. La prueba puede dormir.', flags: ['buried'], next: 'un_asiento' },
+    { id: 'romper', label: 'Romper la nota del kilómetro. Seguir los dos, sin Comité.', flags: ['refused_boat'], next: 'ending_movimiento' }
+  ]
+});
+
+N({ id: 'un_asiento', place: 'Kilómetro 40', when: 'Miércoles · antes de oscurecer',
+  body: s => w(
+    'El embarcadero es de cañas y de una mujer sin uniforme. Mira la grabadora, si la traes, o tus manos vacías si la enterraste. El puesto es real. Es uno solo.',
+    '—Antes de que oscurezca —dice—. Después yo también me voy.',
+    'Juliet no te toca. Es peor: espera, como en el 4B, a que decidas como si ella pudiera decirte que no.',
+    has(s, 'buried') && 'Todavía tienes la tierra de la caseta debajo de las uñas. Brown logró enterrar la prueba. No logró enterrar el kilómetro.'
+  ),
+  choices: [
+    { id: 'ella', label: 'Que suba Juliet. Tú te quedas con lo que sabes.', hint: 'Un puesto. Una persona.',
+      next: 'ending_plaza_vacia',
+      fork: s => s.stats.closeness >= 5 && !has(s, 'rushed') && !has(s, 'plans_return') ? 'ending_no_barco' : null },
+    { id: 'tu', label: 'Subes tú. Le pides que te espere en la orilla.',
+      hint: '«Espérame» es una promesa con hora. Los dos lo saben.', next: 'ending_un_solo_asiento' },
+    { id: 'nombre', label: 'Nadie sube. Dejas el nombre de Andreína y la hora de la llamada.',
+      flags: ['gave_name'], next: 'ending_nombre' },
+    { id: 'nadie', label: 'Nadie sube. Rompes la nota y siguen.', flags: ['refused_boat'], next: 'ending_movimiento' }
+  ]
+});
+
+N({ id: 'clinica', place: 'Puesto de salud', when: 'Miércoles · mañana',
+  body: () => [
+    'El puesto es una casa verde de techo de zinc, despintada. Rita, la enfermera, abre con las manos en alto para que vean que no trae nada. Está lúcida. Cansada de estarlo.',
+    'En la sala del fondo hay dos pacientes sentados muy derechos. Repiten el eslogan de la radio —«permanezcan en sus domicilios»— porque Rita se lo ha estado diciendo para calmarlos. Cada vez que ella contesta, les da una voz más clara que la anterior.',
+    'Juliet lo ve enseguida. Rita no. Rita cree que dejar de hablarle a un paciente es abandonarlo.'
+  ],
+  choices: [
+    { id: 'advertir', label: 'Decirle a Rita que no les conteste más, e irse antes de una hora.',
+      effects: { closeness: 1 }, flags: ['warned_rita', 'left_clinic'], clues: ['rita'], next: 'salida_rita' },
+    { id: 'noche', label: 'Quedarse esta noche. Hay camas y agua.',
+      hint: 'Descansar en una casa que ya está aprendiendo frases.',
+      effects: { provisions: 1, exposure: 1, fatigue: -2 }, flags: ['left_clinic'], next: 'clinica_noche' },
+    { id: 'juliet_habla', label: 'Dejar que Juliet los examine. Es lo suyo.', hint: 'Va a tener que hablarles.',
+      effects: { closeness: -1 }, flags: ['juliet_imprint', 'left_clinic'], next: 'camino_libre' },
+    { id: 'robar', label: 'Vaciar el armario de medicinas y salir.',
+      effects: { provisions: 2, closeness: -2 }, flags: ['stole', 'left_clinic'], next: 'camino_libre' }
+  ]
+});
+
+N({ id: 'clinica_noche', place: 'Puesto de salud', when: 'Miércoles · noche',
+  body: () => [
+    'Las camas son de verdad. El agua también. De madrugada, Rita, por costumbre, le dice a un paciente que todo va a salir bien. Él se lo agradece con las mismas palabras. Después se levanta, camina hasta la puerta del cuarto donde duerme Juliet y espera, educado, a que alguien le conteste.'
+  ],
+  choices: [
+    { id: 'ventana', label: 'Sacar a Juliet por la ventana. Ni una palabra.',
+      effects: { fatigue: 1 }, flags: ['fled_clinic'], next: 'camino_libre' },
+    { id: 'calla', label: 'Decirle a Rita, desde el pasillo, que se calle.',
+      hint: 'Tu voz entra en la casa. La casa toma nota.',
+      effects: { exposure: 1 }, flags: ['shouted_clinic'], next: 'camino_libre',
+      fork: s => s.stats.exposure >= 3 ? 'fiebre' : null },
+    { id: 'contestar', label: 'Contestarle tú, para que no le conteste Juliet.',
+      hint: 'El paciente va a aprender tu voz, no la de ella.',
+      effects: { exposure: 1 }, flags: ['you_answered_clinic'], next: 'ending_casa_quieta' }
+  ]
+});
+
+N({ id: 'salida_rita', place: 'Camino del puesto', when: 'Miércoles',
+  enter: { flags: ['heard_broadcast'], clues: ['frecuencia'] },
+  body: s => w(
+    has(s, 'took_radio')
+      ? 'Rita les confirma lo que ya oyeron en el radio: la voz del estacionamiento del Costa sigue saliendo cada hora.'
+      : 'Rita les presta su radio de pilas y les da una frecuencia, como quien da una llave que no se atreve a usar. La aguja encuentra una voz que conoces mejor que la tuya.',
+    'Andreína. Transmite con el radio de un taxi desde el estacionamiento del edificio Costa, nivel 2. Está ronca y es ella. Dice: no contesten a los golpes, no digan su nombre, no se queden en cuartos cerrados. Dice el tuyo una vez —«{nombre}»— y se corrige, furiosa: «No. Nombres no».',
+    'Se le corta la respiración, repite el eslogan oficial una sola vez y se calla. Vuelve a hablar, otra vez como ella. Le quedan horas, no días.',
+    'Juliet baja el volumen. —Si vamos, vamos sin hablarle dentro de un sitio cerrado. Si no vamos, tienes que oírla hasta el final. No a medias.'
+  ),
+  choices: [
+    { id: 'camion', label: 'Ir al estacionamiento en la camioneta.', hidden: s => !canDrive(s),
+      effects: { fuel: -1, signal: 1 }, flags: ['heading_back'], next: 'regreso' },
+    { id: 'pie', label: 'Ir a pie. Duele, y es hacia ella.', hidden: canDrive,
+      effects: { fatigue: 2, signal: 1 }, flags: ['on_foot', 'heading_back'], next: 'regreso' },
+    { id: 'oir', label: 'Quedarse a oírla hasta que la voz deje de ser suya.', next: 'ending_frecuencia' },
+    { id: 'apagar', label: 'Apagar el radio mientras todavía es ella. Seguir.', flags: ['radio_off'], next: 'ending_movimiento' }
+  ]
+});
+
+N({ id: 'camino_libre', place: 'Campo abierto', when: 'Miércoles',
+  body: s => w(
+    has(s, 'stole')
+      ? 'Las medicinas de Rita van en la mochila y Juliet no te dirige la palabra desde la cerca. Camina a tu lado porque el camino es uno solo, no porque el silencio sea paz.'
+      : has(s, 'juliet_imprint')
+        ? 'Juliet les habló como se habla en una consulta: claro, cerca, sin prisa. Uno de los pacientes repitió su nombre antes de que llegaran a la puerta. Ella cerró la boca y no la ha vuelto a abrir. Detrás, a lo lejos, una figura camina hacia ustedes.'
+        : has(s, 'fled_clinic')
+          ? 'La ventana los dejó en el huerto. Rita sigue adentro, tal vez callada, tal vez no. No se voltean a comprobarlo.'
+          : has(s, 'on_foot')
+            ? 'La camioneta se quedó atrás, con el tanque vacío y las puertas abiertas para que nadie la confunda con un cuarto.'
+            : 'El campo no tiene Comité ni ciudad. Tiene demasiada luz y muy pocas decisiones.',
+    has(s, 'shouted_clinic') && 'En el pasillo dijiste «cállese» y la casa lo guardó. Si algo sale por esa puerta, va a salir con tu acento.',
+    'Juliet se detiene donde el camino se divide: hacia ninguna parte, hacia la capital y hacia el humo fino de Puerto Gris.'
+  ),
+  choices: [
+    { id: 'seguir', label: 'Seguir. Sin Comité y sin ciudad.', flags: ['refused_boat'], next: 'ending_movimiento' },
+    { id: 'andreina', label: 'Volver por Andreína.', effects: { signal: 1, fatigue: 1 },
+      effectsOf: s => ({ fuel: has(s, 'on_foot') || s.stats.fuel < 1 ? 0 : -1 }),
+      flags: ['heading_back'], next: 'regreso' },
+    { id: 'capital', label: 'Probar suerte en la capital, si la camioneta todavía arranca.',
+      hidden: s => has(s, 'on_foot') || s.stats.fuel < 2, effects: { fuel: -1 }, next: 'capital_control' }
+  ]
+});
+
+N({ id: 'regreso', place: s => atParking(s) ? 'Edificio Costa · estacionamiento, nivel 2' : 'Edificio Costa · 3A', when: 'Miércoles · tarde',
+  body: s => {
+    const st = andreina(s);
+    const park = atParking(s);
+    return w(
+      'De vuelta hacia el centro no hay controles. Hay silencio. El edificio Costa sigue en pie, y su escalera huele a la misma almendra, más seca.',
+      park && 'En el nivel 2 del estacionamiento hay un taxi con las ventanas subidas y el motor encendido. Adentro, Andreína, con el micrófono del radio en la mano. Un carro cerrado también es un cuarto.',
+      park && has(s, 'heard_broadcast') && 'Hace unas horas esa voz se corregía sola en el radio. Aquí nada garantiza que siga haciéndolo.',
+      st === 'imprinted'
+        ? (park
+          ? 'Por el vidrio la oyes repetir el eslogan y, debajo, tu nombre, masticado. No pregunta. Repite. Juliet se queda junto a la rampa, donde corre el aire.'
+          : 'Detrás de tu puerta, el eslogan y, debajo, tu nombre, masticado. No pregunta. Repite. Juliet se queda en el descanso, donde corre el aire. El pasillo es un tubo. El apartamento es un cuarto cerrado.')
+        : st === 'fraying'
+          ? `Andreína habla desde ${park ? 'el taxi' : 'adentro'}, y a ratos es ella: furiosa, concreta, en voz baja. A ratos te devuelve tu última frase con una cortesía que no es suya. —No entres. Si entras, te me quedas en la boca.`
+          : has(s, 'note_for_her')
+            ? `Tu papel de ayer ${park ? 'está pegado por dentro del vidrio del taxi' : 'asoma menos de lo que lo dejaste: ella lo recogió'}. La voz que llega es ronca y suya. —Lo leí. No hables aquí. Si tengo que salir, salgo hacia la rampa, no hacia ustedes.`
+            : 'Andreína está lúcida, febril y malhumorada, que es su manera de estar lúcida. —No entres, {nombre}. Si entras, te me quedas en la boca. Di una frase y apártate.',
+      'Si hablan los dos en ese aire, están eligiendo cuál va a ser la última voz.'
+    );
+  },
+  choices: [
+    { id: 'guiar', label: 'Una frase tuya, desde lejos: «Camina». Juliet no habla.',
+      hidden: s => andreina(s) === 'imprinted', next: 'ending_tres',
+      fork: s => s.stats.closeness <= 2 ? 'ending_retrovisor' : null },
+    { id: 'juliet', label: 'Que hable Juliet. Andreína la llamó a ella.', hint: 'Una instrucción. Después, silencio.',
+      hidden: s => andreina(s) === 'imprinted', next: 'ending_la_que_responde' },
+    { id: 'nota', label: 'Dejarle agua, la regla por escrito y ningún sonido. Aunque duela.',
+      flags: ['second_note'], next: 'ending_nota' },
+    { id: 'hablar_igual', label: 'Hablarle aunque ya no sea del todo ella.',
+      hidden: s => andreina(s) !== 'imprinted', effects: { exposure: 1 }, next: 'ending_ya_llegue' }
+  ]
+});
+
+/* =========================================================
+   FINALES
+   ========================================================= */
+
+const E = (id, title, epitaph, place, when, body) =>
+  N({ id, place, when, ending: { title, epitaph }, body });
+
+E('ending_orilla', 'La orilla', 'El cuerpo decidió antes que ustedes.', 'Epílogo', 'Donde se detuvieron', () => [
+  'Paran porque el cuerpo se detiene. La camioneta, si todavía existe, hace ese tic del metal cuando se enfría.',
+  'Juliet dice tu nombre. Casi le contestas con el suyo, que sería el error, pero el cansancio te corta la frase a la mitad. Ella lo entiende. Te deja el agua al alcance y se aparta un paso, no por miedo a ti: por miedo a convertirse en la última voz clara de esta orilla.',
+  'Un golpe, lejos. Luego, menos lejos. Paciente, educado, contento de haber encontrado a alguien que ya no camina. El movimiento era la vida. Se quedaron sin él.'
+]);
+
+E('ending_sin_voz', 'Sin voz', 'La alejaste con un papel, no con un nombre.', 'Epílogo', 'El camino', s => w(
+  'Escribes en el margen del mapa: «No digas mi nombre. No te quedes. Si te hablo, no me contestes». Juliet lo lee dos veces. No te lo discute en voz alta, porque ya entendió la regla mejor que Brown.',
+  'Deja el agua donde puedas alcanzarla sin que su mano pase demasiado tiempo en tu mismo aire. Camina. Una vez, desde lejos, levanta la mano. No le devuelves el gesto con la boca. Se lo devuelves con la mano. Es el último movimiento que todavía es tuyo.',
+  s.stats.closeness >= 4
+    ? 'No se voltea el tiempo suficiente para que el camino se vuelva un cuarto. Viniendo de Juliet, eso es una declaración.'
+    : 'No es una despedida de película. Es un procedimiento. Duele igual.'
+));
+
+E('ending_ultima_frase', 'La última frase', 'Se quedó, y cambiaba de tema cada vez que la repetías.', 'Epílogo', 'El camino', s => w(
+  s.stats.closeness >= 4
+    ? 'Juliet se queda. No porque se lo pidieras bien: ya lo había decidido antes de que la fiebre empezara a copiarte. Caminan. Te habla de alambradas, de un perro que no está, del anuncio de fertilizante. Cosas sin peso. Si empiezas a repetir lo del perro, cambia de tema.'
+    : 'Juliet se queda porque dejar a una persona sola en un camino no es algo que sepa hacer. Te lo dice así, sin adornos. Caminan. Habla poco y de cosas concretas, y cuando la repites cambia la frase como quien cambia una gasa.',
+  'No va a funcionar para siempre. Funciona esta mañana. La última voz clara que te queda no es un adiós: es una lista del mundo, dicha por alguien que decidió gastarla en ti.',
+  has(s, 'rushed')
+    ? 'Nunca vuelve sobre lo que le dijiste en el 4B. Si el amor cabe en esto, cabe en no aprovecharse de una boca que ya no obedece.'
+    : 'No te besa. Un beso sería un cuarto diminuto entre dos caras, y no piensa dejarte otra voz encima de la que ya tienes.'
+));
+
+E('ending_movimiento', 'Movimiento es vida', 'Siguen. Su nombre lo piensas, que es donde no se oye.', 'Epílogo', 'En marcha', s => w(
+  has(s, 'on_foot')
+    ? 'No hay camioneta. Hay una orilla de carretera que no se acaba y un acuerdo: no parar donde haya paredes. El cuerpo protesta. Lo escuchan sin obedecerle del todo.'
+    : 'La camioneta aguanta otro tramo. Llevan las ventanas abajo, aunque haga frío, para que la cabina no se vuelva un cuarto.',
+  has(s, 'radio_off') && 'Apagaste a Andreína mientras todavía se corregía. Eso va sentado entre los dos, ocupando más espacio que la mochila. No lo llamas una decisión por amor. Juliet tampoco. Solo dice: «El próximo tramo manejo yo». Es más íntimo que tomarte la mano.',
+  has(s, 'refused_boat') && !has(s, 'radio_off') && 'El Comité se queda sin la prueba y sin ustedes. Brown quería una de las dos cosas. No le dieron ninguna.',
+  s.stats.closeness >= 5
+    ? 'Juliet te dice: —Si algún día empiezo a repetirte las frases, no me corrijas. Detente y escríbeme. —Asientes. Más tarde se duerme con la frente contra el vidrio, o contra tu hombro si van a pie. No dices su nombre, ni siquiera con cariño. Los nombres son asas. Réplica no oye lo que piensas.'
+    : 'No son una pareja. Son un método que se está acostumbrando a otra persona. Juliet dicta las reglas con voz práctica: frases cortas, nada de nombres si el aire está quieto, turnos para no dormirse al mismo tiempo. Si llega la ternura, va a tener que disfrazarse de procedimiento.',
+  has(s, 'rushed') && 'Lo que le dijiste en el 4B viaja con ustedes como un tercer pasajero. Ella no lo baja de la camioneta. Tampoco le hace espacio.',
+  has(s, 'juliet_imprint') && 'A veces, muy atrás, alguien camina con el nombre de Juliet en la boca. Mientras ustedes se muevan, no acorta la distancia. Así que se mueven.'
+));
+
+E('ending_plaza_vacia', 'El puesto vacío', 'Ella vive. Tú te quedas de testigo, que no es lo mismo que quedarte de bueno.', 'Epílogo', 'Kilómetro 40', () => [
+  'Juliet sube porque se lo pediste como un hombre práctico, y ella es una mujer práctica. Desde la lancha no te dice adiós. Despedirse es pariente pobre de decir un nombre.',
+  'Te quedas en el kilómetro 40 con lo que sabes: la grabadora, o el recuerdo de haberla enterrado. Al oscurecer echas a andar, no hacia la ciudad sino hacia cualquier lado que no sea un cuarto.',
+  'Si Réplica quiere una voz, va a tener que aprender la de un hombre que ya no le habla a nadie. El nombre de Juliet no lo dices. Lo gastas por dentro, despacio, para que te dure.'
+]);
+
+E('ending_no_barco', 'Donde no quepas', 'Rechazó el puesto que no te incluía.', 'Epílogo', 'Kilómetro 40', s => w(
+  '—No me subas a un sitio donde tú no quepas —dice Juliet.',
+  'No es un discurso. Es la misma voz con que te pidió que decidieras como si ella pudiera decirte que no. Esta vez dice que no. La mujer del embarcadero no insiste. Ella también tiene que irse.',
+  has(s, 'hand')
+    ? 'Juliet te toma de la manga, no de la mano, para que la piel no se quede. Echan a andar por la orilla, lejos del agua.'
+    : 'Camina a tu lado, ni delante ni como quien va escoltada. El agua se queda sin ustedes.',
+  'No hay beso en el kilómetro 40. Hay un rechazo que los deja del mismo lado del mapa. Brown diría que es un error: dos personas juntas se encuentran más fácil. Tú, por esta noche, lo llamas compañía. No se lo dices en voz alta.'
+));
+
+E('ending_un_solo_asiento', 'Un solo puesto', 'Le pediste que te esperara. Los dos oyeron que era mentira.', 'Epílogo', 'Kilómetro 40', s => w(
+  'Subes. Le pides que te espere, que es una mentira con hora. La mujer no te pide explicaciones. El motor tampoco.',
+  s.stats.closeness >= 5
+    ? 'Juliet dice tu nombre una vez, clara y enojada, para que tengas que llevártelo. No corre detrás de la lancha. Quedarse quieta en la orilla también es una manera de no darte otra frase para repetir.'
+    : has(s, 'rushed')
+      ? '—Ya me lo dijiste en el 4B —dice, y se da la vuelta antes de que el motor tape el resto. No hay resto. Lo entendiste entonces y te hiciste el que no.'
+      : 'Juliet asiente, que en ella puede ser acuerdo o inventario. Se aparta de la orilla para no ser la figura que miras mientras te salvas. El gesto te humilla más que un insulto.',
+  'El Comité, o lo que queda de él, gana un pasajero. Tú pierdes a la única persona que te habría escrito en el margen de un mapa en vez de llamarte por tu nombre.'
+));
+
+E('ending_nombre', 'El nombre en la mesa', 'El puesto quedó para Andreína. Nunca sabrán si lo usó.', 'Epílogo', 'Tierra adentro', s => w(
+  'Le das a la mujer el nombre de Andreína, la hora de la llamada y, si lo sabes, el nivel del estacionamiento. No le das tu voz al agua. Es superstición y es ruego.',
+  has(s, 'heard_broadcast')
+    ? 'Le dices que Andreína todavía se corrige cuando se le escapa un nombre. La mujer anota «se corrige» como si fuera un síntoma útil. Puede que lo sea.'
+    : 'La mujer anota el nombre sin prometer nada. Las promesas son frases, y esta tarde a todo el mundo le faltan frases.',
+  'Juliet y tú se van tierra adentro. No van a saber si alguien usó ese puesto. No saber es la forma que todavía tiene tu cuidado por Andreína: no entrar en su cuarto, no tapar su voz con la tuya, dejarle una salida que no pase por tu boca.',
+  s.stats.closeness >= 4
+    ? 'En el tramo siguiente, Juliet maneja, o marca el paso. No te absuelve. Tampoco te deja solo con la duda, que sería más fácil y más cruel.'
+    : 'El viaje que les queda es eficiente y silencioso. Sobrevivir no los volvió íntimos. Los volvió precisos.'
+));
+
+E('ending_frecuencia', 'La frecuencia', 'La oíste hasta el final. Juliet eligió cuál sería la última voz.', 'Epílogo', 'Junto al radio', s => w(
+  'Andreína repite el eslogan tres veces y no se corrige. A la cuarta, Juliet apaga el radio. El clic es pequeño y se lleva por delante una redacción, una investigación y la versión de tu vida en la que llegabas a tiempo.',
+  'Nadie habla durante un largo rato. El campo sigue ahí, insoportablemente normal.',
+  s.stats.closeness >= 4
+    ? 'Entonces Juliet dice tu nombre. Una vez, claro, mirándote. Para que, si el aire de la camioneta ya es un cuarto, la última voz que los dos oyeron sea una que eligieron. No es un beso. Te desarma igual.'
+    : 'Juliet no te ofrece tu nombre. Arranca, o echa a andar, y deja el radio apagado boca abajo, como se deja un cuchillo. El duelo es real. La confianza, todavía no. Quedan muchos kilómetros para no confundir una cosa con la otra.'
+));
+
+E('ending_casa_quieta', 'Todo va a salir bien', 'Contestaste tú para que no la aprendiera a ella.', 'Epílogo', 'La carretera contraria', () => [
+  'Contestaste tú. El paciente aprende tu manera de hablar con un agradecimiento espantoso y te sigue hasta el huerto, educado, sin prisa, repitiendo que todo va a salir bien con una boca que ya no es la de Rita.',
+  'Le escribes a Juliet, en el reverso de una receta, que se lleve la camioneta lejos del puesto. Te obedece porque entiende lo que estás haciendo, y porque discutirlo en voz alta los mataría a los dos. Se va.',
+  'Tú caminas en dirección contraria. Detrás, la misma promesa, con tu voz. No te detienes: detenerte sería dejarlo terminar la lección. Esta noche, quererla es eso: que te siga a ti y no a ella.'
+]);
+
+E('ending_tres', 'Ventanas abiertas', 'Tres personas en una camioneta que no puede ser un cuarto.', 'Epílogo', 'Carretera, ventanas abajo', s => w(
+  andreina(s) === 'fraying'
+    ? `Andreína sale ${atParking(s) ? 'del taxi' : 'del apartamento'}. A mitad de camino repite una frase tuya y luego se insulta, con su voz de verdad, y te prohíbe contestarle cuando eso pase. Ustedes van detrás y delante, nadie en el mismo sitio el tiempo suficiente.`
+    : 'Andreína sale por su propio pie, furiosa, lúcida, ardiendo de fiebre. —No hablen. No me toquen. Manejen. —Es la persona más inteligente del edificio y lo demuestra no pidiendo un abrazo.',
+  'Tres personas en una camioneta son un cuarto que se mueve. La regla nace sola: ventanas abiertas, frases de tres palabras, ningún nombre. El aire frío es parte del tratamiento.',
+  s.stats.closeness >= 5
+    ? 'Juliet acepta la regla sin convertirte ni en villano ni en el elegido. Cuando Andreína se duerme —se duerme de verdad— Juliet te mira y niega con la cabeza, apenas, por si se te ocurría hablar para llenar el alivio. Querer decir algo y guardarte el aire, porque el aire es un arma: eso es lo que hay entre ustedes, por ahora.'
+    : 'Juliet acepta porque el procedimiento es bueno, no porque te haya perdonado el triángulo. Maneja un tramo. Andreína no pregunta qué son ustedes dos. Todavía está ocupada en seguir siendo ella.',
+  'Nadie gana. Los tres siguen siendo personas, que esta semana es un final enorme de lo pequeño que es.'
+));
+
+E('ending_retrovisor', 'El retrovisor', 'Juliet te dio las llaves y se quedó.', 'Epílogo', 'Puerto Gris, de salida', s => w(
+  `Andreína sale ${atParking(s) ? 'del taxi' : 'al pasillo'} porque se lo pediste en una frase corta y te apartaste. Está enferma y es ella. Juliet mira la escena —tú, Andreína, la mujer con la que todavía compartes un contrato de alquiler— y no se sube.`,
+  'Te pone las llaves en la mano. —Yo sé quedarme sin contestar. Ustedes dos, todavía no. —No es del todo justo. Es lo bastante cierto como para que no le discutas.',
+  'En el retrovisor, Juliet se va haciendo pequeña sin terminar de darse vuelta. Andreína todavía no pregunta quién era. La camioneta lleva las ventanas abajo y una conversación que no se pueden permitir. Atrás se queda la única persona que leyó tu nota y aun así te abrió la puerta.'
+));
+
+E('ending_la_que_responde', 'Por escrito', 'Juliet habló una vez. Después, solo papel.', 'Epílogo', 'La camioneta', s => w(
+  `Juliet no se acerca. Desde ${atParking(s) ? 'la rampa' : 'la escalera'}, una sola instrucción: —Andreína, camina hacia mi voz y no hables. —Funciona demasiado bien.`,
+  'En la camioneta, Andreína mira la boca de Juliet como quien mira una brújula. Juliet deja de usarla. Escribe. Te pasa un papel: «sigo aquí. no me pidas que diga tu nombre».',
+  has(s, 'rushed')
+    ? 'Otro papel, minutos después, más seco: «este no es el momento». Lo del 4B viaja con ustedes, por fin en el formato que se merecía.'
+    : 'No escribe «te quiero». Sería una frase preciosa y, en este aire, una orden. La letra basta. La lees dos veces y guardas el papel donde no se te caiga cerca de Andreína, que ya tiene una voz que seguir y no necesita la tuya.',
+  'Andreína, lúcida a ratos, obedece el silencio como si fuera un tratamiento. Los tres son un hechizo mal cerrado: una mujer que hace de brújula, otra que la sigue, y tú, aprendiendo a querer en presente sin decirlo.'
+));
+
+E('ending_nota', 'La segunda nota', 'Empezaste con un papel. Terminas con otro.', 'Epílogo', s => atParking(s) ? 'El estacionamiento' : 'La escalera', s => w(
+  atParking(s)
+    ? 'Dejan agua, antitérmico y la regla escrita sobre el capó del taxi. No tocan el vidrio. Tocar sería pedir una respuesta, y ya saben en qué se convierte una respuesta.'
+    : 'Deslizan agua, antitérmico y la regla escrita por debajo de la puerta. No tocan. Tocar sería pedir una respuesta, y ya saben en qué se convierte una respuesta.',
+  andreina(s) === 'imprinted'
+    ? 'Del otro lado no llega un «está bien». Llega el eslogan, cariñoso, dirigido a nadie y a ti. Tal vez lea el papel. Tal vez no. Se van mientras todavía pueden distinguir sus pasos de los de ella.'
+    : has(s, 'note_for_her')
+      ? 'La segunda nota encuentra a la primera. Oyes el papel y, después, una sola palabra con la voz de Andreína, no con la tuya: «Bueno». Se van mientras esa palabra todavía es suya.'
+      : 'Oyes el papel moverse. Luego, bajito y real: «¿{nombre}?». No contestas. Es lo más cerca que estuviste de salvarla y de perderte. Juliet te toca el codo y se van.',
+  s.stats.closeness >= 4
+    ? 'Juliet iguala tu paso para que la bajada no suene a una persona abandonando a otra. No te consuela. El consuelo sería una voz de más.'
+    : 'Se van eficientes, avergonzados, vivos. La ciudad les debe un edificio, y ustedes le deben un silencio.'
+));
+
+E('ending_ya_llegue', 'Detrás de la camioneta', 'Hablaste en el cuarto equivocado. Ahora ella te sigue.', 'Epílogo', 'Detrás de la marcha', () => [
+  'Hablas. El cuarto te cobra. Andreína sale repitiendo lo último que dijiste, con una sonrisa que no es suya, y camina hacia tu boca como hacia una puerta que por fin tiene sentido.',
+  'No la dejas subir a la cabina. Juliet maneja a paso de hombre, ventanas arriba, radio apagado. Tú vas delante, a pie, y Andreína detrás de ti, no de ella. Es un arreglo monstruoso y, por ahora, funciona.',
+  'No sabes cuánto tiempo puede una persona hacer de faro. Sabes que si te detienes, el camino se vuelve un cuarto largo. Así que sigues. Juliet te mira por el retrovisor y no dice tu nombre. Tú no dices el de Andreína. Entre los tres, lo único que habla es el motor, y el motor no tiene voz que imitar.'
+]);
+
+/* ---------- Finales nuevos (rama de la libreta) ---------- */
+
+E('ending_registro', 'El registro', 'Tu letra dijo la verdad el lunes. El miércoles sacó a doscientas personas.', 'Epílogo', 'Polideportivo', s => w(
+  'Escribes la regla con marcador en el reverso de un cartel de vacunación: «No hablen. No digan su nombre. Salgan en silencio por la puerta de atrás. Si alguien les repite, no contesten». Ortega la lee y asiente.',
+  'Tardan cuatro horas. Grupo por grupo, cartel en alto, sin una sola voz. Los soldados aprenden a señalar. Juliet aparta a los tres que se quedaron demasiado quietos y los deja en la cancha vacía, con la puerta abierta y nadie que les hable. Cuando sale el último grupo, el polideportivo suena por fin a lo que es: un edificio vacío.',
+  'A ustedes no los dejan irse. Ortega se queda con la libreta y les asigna una carpa y un soldado en la puerta: son testigos. Brown tendrá que explicar por qué firmó la verdad el lunes y mandó a contar gente el martes.',
+  s.stats.signal >= 4
+    ? 'Esa noche le das a Ortega el nombre de Andreína y el lugar donde la oíste por última vez. Ella lo anota sin prometer nada. Es más de lo que habrías conseguido gritando.'
+    : 'Esa noche no duermes. Piensas en Andreína, que llevaba semanas detrás de esta historia, y en que la prueba la tenías tú.',
+  s.stats.closeness >= 4
+    ? 'Juliet se sienta en tu catre sin pedir permiso. No dice nada. Ya no hace falta decir nada para estar cerca.'
+    : 'Juliet duerme en el catre de al lado, de espaldas. Hicieron algo bueno juntos. Todavía no saben qué son.'
+));
+
+E('ending_voz_pabellon', 'La voz del polideportivo', 'Dijiste la regla en voz alta. Doscientas personas te obedecieron. Tres te aprendieron.', 'Epílogo', 'Polideportivo', s => w(
+  'Te paras en la puerta y dices la regla una sola vez, clara, con la voz con que les explicas una avería a los vecinos: «No hablen. No digan su nombre. Salgan en silencio». El polideportivo se calla de golpe. Doscientas personas te obedecen.',
+  'Tres se levantan. Los que estaban demasiado quietos caminan hacia ti repitiendo «no hablen» con tu entonación exacta, empujando con suavidad entre la gente que se aparta.',
+  'No esperas. Les das la espalda y sales al campo, despacio, para que te sigan a ti y no a los demás. Detrás de ti, tres voces iguales a la tuya. Delante, ninguna.',
+  s.stats.closeness >= 4
+    ? 'Lo último que ves del polideportivo es a Juliet, en la puerta, levantando un cartel para organizar la salida. No te llama. Ese silencio es lo más valiente que alguien ha hecho por ti.'
+    : 'Juliet se queda organizando la salida con Ortega. No te llama. Es lo correcto, y los dos lo saben.'
+));
+
+/* =========================================================
+   MOTOR — funciones puras (sin DOM). Se pueden probar en Node.
+   ========================================================= */
+
+const val = (x, s) => typeof x === 'function' ? x(s) : x;
+const clampStats = st => {
+  const out = { ...st };
+  for (const k of Object.keys(STORY.maxStats)) {
+    const n = Number.isFinite(out[k]) ? out[k] : 0;
+    out[k] = Math.max(0, Math.min(STORY.maxStats[k], n));
+  }
+  return out;
+};
+const node = id => STORY.nodes[id];
+
+// Nombre del protagonista: se escribe al iniciar y reemplaza {nombre} en el texto
+const DEFAULT_NAME = 'León';
+function cleanName(x) {
+  const n = String(x || '').replace(/[\u0000-\u001f<>{}]/g, '').replace(/\s+/g, ' ').trim().slice(0, 24);
+  return n ? n.charAt(0).toLocaleUpperCase('es') + n.slice(1) : DEFAULT_NAME;
+}
+const nameOf = s => (s && s.name) || DEFAULT_NAME;
+const sub = (t, s) => typeof t === 'string' ? t.replace(/\{nombre\}/g, nameOf(s)) : t;
+
+function newGame(name) {
+  return { name: cleanName(name), nodeId: STORY.start, stats: { ...STORY.initialStats }, flags: [], clues: [], fresh: [], history: [] };
+}
+
+function applyChange(s, ch) {
+  if (!ch) return s;
+  let st = { ...s.stats };
+  for (const [k, v] of Object.entries(ch.effects || {})) if (typeof v === 'number') st[k] = (st[k] || 0) + v;
+  const flags = [...s.flags];
+  for (const f of ch.flags || []) if (!flags.includes(f)) flags.push(f);
+  const clues = [...s.clues], fresh = [...s.fresh];
+  for (const c of ch.clues || []) if (STORY.codex[c] && !clues.includes(c)) { clues.push(c); fresh.push(c); }
+  return { ...s, stats: clampStats(st), flags, clues, fresh };
+}
+
+function enterNode(s, id) {
+  const n = node(id);
+  if (!n) return s;
+  let r = { ...s, nodeId: id, fresh: [] };
+  r = applyChange(r, val(n.enter, r));
+  if (n.onEnter) r = applyChange(r, n.onEnter(r));
+  return r;
+}
+
+function paragraphs(s) {
+  const n = node(s.nodeId);
+  if (!n) return ['La partida apunta a una escena que ya no existe.'];
+  const p = n.body(s).map(x => sub(x, s));
+  return p.length ? p : ['…'];
+}
+
+function choicesFor(s) {
+  const n = node(s.nodeId);
+  if (!n || !n.choices) return [];
+  return n.choices.filter(c => !(c.hidden && c.hidden(s))).map(c => {
+    const enabled = !c.enabled || c.enabled(s);
+    return { choice: c, label: sub(c.label, s), enabled, reason: sub(enabled ? val(c.hint, s) : (c.locked || val(c.hint, s)), s) };
+  });
+}
+
+function choose(s, choiceId) {
+  const n = node(s.nodeId);
+  const c = n && n.choices && n.choices.find(x => x.id === choiceId);
+  if (!c || (c.hidden && c.hidden(s)) || (c.enabled && !c.enabled(s))) return s;
+  let r = applyChange(s, { effects: { ...(c.effects || {}), ...(c.effectsOf ? c.effectsOf(s) : {}) }, flags: c.flags });
+  const target = (c.fork && c.fork(r)) || c.next;
+  const history = [...s.history, { place: val(n.place, s), label: sub(c.label, s) }].slice(-120);
+  r = enterNode({ ...r, history }, target);
+  return applyChange(r, { clues: c.clues });
+}
+
+function allEndings() {
+  return Object.values(STORY.nodes).filter(n => n.ending).map(n => ({ id: n.id, ...n.ending }));
+}
+
+function validSave(x) {
+  return x && typeof x === 'object' && typeof x.nodeId === 'string' && !!node(x.nodeId) &&
+    x.stats && typeof x.stats === 'object' && Array.isArray(x.flags) && Array.isArray(x.clues);
+}
+
+function restore(x) {
+  if (!validSave(x)) return null;
+  const base = newGame();
+  const stats = { ...base.stats };
+  for (const k of Object.keys(stats)) if (Number.isFinite(x.stats[k])) stats[k] = x.stats[k];
+  return {
+    name: cleanName(x.name), nodeId: x.nodeId, stats: clampStats(stats),
+    flags: x.flags.filter(f => typeof f === 'string'),
+    clues: x.clues.filter(c => typeof c === 'string' && STORY.codex[c]),
+    fresh: [],
+    history: Array.isArray(x.history) ? x.history.filter(h => h && typeof h.label === 'string').slice(-120) : []
+  };
+}
+
+// Palabras para los indicadores
+const WORDS = {
+  provisions: v => ['Nada', 'Justo', 'Algo', 'Reserva', 'De sobra', 'De sobra'][v] || 'Nada',
+  fuel: v => ['Vacío', 'Reserva', 'Medio', 'Holgura', 'Lleno', 'Lleno'][v] || 'Vacío',
+  fatigue: v => ['Entero', 'Despierto', 'Con sueño', 'Pesado', 'Al límite', 'Vacío'][v] || 'Vacío',
+  exposure: v => ['Limpio', 'Expuesto', 'Marcado', 'Fiebre'][v] || 'Fiebre',
+  closeness: v => v <= 1 ? 'Distancia' : v <= 3 ? 'Tregua' : v <= 5 ? 'Confianza' : v <= 7 ? 'Cerca' : 'Sin palabras',
+  signal: v => v <= 1 ? 'Lejos' : v <= 3 ? 'Sin noticias' : v <= 5 ? 'Un hilo' : v <= 7 ? 'Te busca' : 'Te sigue'
+};
+const LABELS = { provisions: 'Provisiones', fuel: 'Gasolina', fatigue: 'Cansancio', exposure: 'Exposición', closeness: 'Juliet', signal: 'Andreína' };
+
+/* =========================================================
+   INTERFAZ
+   ========================================================= */
+
+const KEY = 'movimiento-es-vida-v2';
+const AUTHOR = /[?&]autor=1/.test(location.search);
+const $ = id => document.getElementById(id);
+const el = (tag, cls, text) => { const x = document.createElement(tag); if (cls) x.className = cls; if (text != null) x.textContent = text; return x; };
+
+let save = { version: 2, slot: null, endings: [] };
+let game = null;       // partida en curso
+let shown = 1;         // párrafos visibles de la escena actual
+
+function load() {
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (!raw) return;
+    const p = JSON.parse(raw);
+    save = { version: 2, slot: restore(p.slot), endings: Array.isArray(p.endings) ? p.endings.filter(e => typeof e === 'string') : [] };
+  } catch { /* sin almacenamiento: se juega igual */ }
+}
+function persist() {
+  try { localStorage.setItem(KEY, JSON.stringify(save)); return true; } catch { return false; }
+}
+function toast(msg) {
+  const t = $('toast'); t.textContent = msg; t.hidden = false;
+  clearTimeout(toast.t); toast.t = setTimeout(() => { t.hidden = true; }, 2400);
+}
+
+/* ---------- Pantalla de título ---------- */
+function showTitle() {
+  game = null;
+  $('game').hidden = true; $('title').hidden = false;
+  const cont = $('continue');
+  cont.hidden = !save.slot;
+  if (save.slot) $('continueWhere').textContent = nameOf(save.slot) + ' · ' + val(node(save.slot.nodeId).place, save.slot);
+  $('nameForm').hidden = true; $('confirmNew').hidden = true;
+  const all = allEndings(), seen = all.filter(e => save.endings.includes(e.id));
+  $('endingsCount').textContent = `Finales ${seen.length} de ${all.length}`;
+  const list = $('endingsList'); list.replaceChildren();
+  if (!seen.length) list.append(el('p', 'muted small', 'Todavía no has llegado a ningún final.'));
+  for (const e of seen) {
+    const li = el('div', 'ending-card');
+    li.append(el('h3', null, e.title), el('p', 'muted small', e.epitaph));
+    list.append(li);
+  }
+  window.scrollTo(0, 0);
+}
+
+function askName() {
+  $('confirmNew').hidden = true;
+  $('nameForm').hidden = false;
+  const i = $('heroName'); i.value = ''; i.focus();
+}
+function startNew(name) {
+  $('nameForm').hidden = true;
+  game = enterNode(newGame(name), STORY.start);
+  save.slot = game; persist();
+  shown = 1; showGame();
+}
+function continueGame() {
+  game = save.slot; shown = paragraphs(game).length; showGame();
+}
+
+/* ---------- Partida ---------- */
+function showGame() {
+  $('title').hidden = true; $('game').hidden = false;
+  render(true);
+}
+
+function statRow(k, compact) {
+  const v = game.stats[k], max = STORY.maxStats[k];
+  const row = el('div', compact ? 'stat compact' : 'stat');
+  const head = el('div', 'stat-head');
+  head.append(el('span', 'stat-label', LABELS[k]), el('span', 'stat-word', WORDS[k](v) + (AUTHOR ? ` (${v})` : '')));
+  const bar = el('div', 'bar');
+  bar.setAttribute('role', 'img'); bar.setAttribute('aria-label', `${LABELS[k]}: ${WORDS[k](v)}, ${v} de ${max}`);
+  for (let i = 0; i < max; i++) bar.append(el('span', i < v ? 'on' : ''));
+  row.append(head, bar);
+  return row;
+}
+
+function render(scrollTop) {
+  const n = node(game.nodeId);
+  const paras = paragraphs(game);
+  shown = Math.min(Math.max(shown, 1), paras.length);
+  const place = val(n.place, game), when = val(n.when, game);
+
+  // indicadores
+  for (const id of ['stats', 'statsMobile']) {
+    const box = $(id); box.replaceChildren();
+    for (const k of Object.keys(LABELS)) box.append(statRow(k, id === 'statsMobile'));
+  }
+  $('placeSide').textContent = place; $('whenSide').textContent = when;
+  $('placeTop').textContent = place; $('whenTop').textContent = when;
+  $('clueCount').textContent = game.clues.length;
+  $('clueCountTop').textContent = game.clues.length;
+
+  // escena
+  const scene = $('scene'); scene.replaceChildren();
+  if (n.ending) scene.append(el('p', 'eyebrow', 'Final · ' + n.ending.title));
+  else scene.append(el('p', 'eyebrow muted', `${place} · ${when}`));
+  const last = game.history[game.history.length - 1];
+  if (last && !n.ending) scene.append(el('p', 'echo', 'Elegiste: ' + last.label));
+  if (game.fresh.length) scene.append(el('p', 'fresh', 'Nuevo en el diario · ' + game.fresh.map(c => STORY.codex[c].title).join(' · ')));
+  if (AUTHOR) scene.append(el('p', 'author', `[${game.nodeId}] flags: ${game.flags.join(', ') || '—'}`));
+
+  const text = el('div', 'story');
+  paras.slice(0, shown).forEach((p, i) => {
+    const para = el('p', i === shown - 1 && shown > 1 ? 'rise' : '', p);
+    text.append(para);
+  });
+  scene.append(text);
+
+  const actions = el('div', 'actions');
+  if (shown < paras.length) {
+    const more = el('button', 'btn primary', 'Seguir');
+    more.onclick = () => { shown++; render(false); more.blur(); };
+    const all = el('button', 'btn link', 'Mostrar todo');
+    all.onclick = () => { shown = paras.length; render(false); };
+    actions.append(more, all);
+  } else if (n.ending) {
+    actions.append(el('p', 'epitaph', n.ending.epitaph));
+    const close = el('button', 'btn primary', 'Cerrar la partida');
+    close.onclick = () => { save.slot = null; persist(); toast('Final guardado.'); showTitle(); };
+    actions.append(close);
+  } else {
+    const list = choicesFor(game);
+    actions.append(el('p', 'eyebrow muted', '¿Qué haces?'));
+    list.forEach(({ choice, label, enabled, reason }, i) => {
+      const b = el('button', 'choice');
+      b.disabled = !enabled;
+      b.append(el('span', 'num', String(i + 1).padStart(2, '0')));
+      const body = el('span', 'choice-body');
+      body.append(el('span', 'choice-label', label));
+      if (reason) body.append(el('span', 'choice-hint', reason));
+      b.append(body);
+      b.onclick = () => pick(choice.id);
+      actions.append(b);
+    });
+    if (!list.some(c => c.enabled)) {
+      // Red de seguridad: nunca debería pasar
+      const b = el('button', 'btn', 'Volver al título');
+      b.onclick = showTitle; actions.append(el('p', 'muted small', 'No hay salida desde aquí. Esto es un error de la historia.'), b);
+    }
+  }
+  scene.append(actions);
+
+  if (scrollTop) window.scrollTo(0, 0);
+  else { const t = text.lastElementChild; if (t && t.scrollIntoView) t.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
+}
+
+function pick(id) {
+  const before = game;
+  game = choose(game, id);
+  if (game === before) return;
+  const n = node(game.nodeId);
+  if (n.ending && !save.endings.includes(game.nodeId)) save.endings.push(game.nodeId);
+  save.slot = game;
+  if (!persist()) $('saveNote').textContent = 'No se pudo guardar en este navegador. Exporta la partida para no perderla.';
+  shown = 1;
+  render(true);
+}
+
+/* ---------- Diálogos ---------- */
+function openJournal(tab) {
+  const d = $('journal');
+  const body = $('journalBody'); body.replaceChildren();
+  for (const b of d.querySelectorAll('[data-tab]')) b.classList.toggle('active', b.dataset.tab === tab);
+  if (tab === 'pistas') {
+    if (!game.clues.length) body.append(el('p', 'muted', 'Todavía no hay nada anotado.'));
+    for (const c of game.clues) {
+      const e = STORY.codex[c]; const item = el('div', 'clue');
+      item.append(el('h3', null, e.title), el('p', null, e.text)); body.append(item);
+    }
+  } else {
+    if (!game.history.length) body.append(el('p', 'muted', 'Tu historia empieza en la azotea del anexo.'));
+    const ol = el('ol', 'history');
+    for (const h of game.history) { const li = el('li'); li.append(el('span', 'muted small', h.place), el('span', null, h.label)); ol.append(li); }
+    body.append(ol);
+  }
+  if (!d.open) d.showModal();
+}
+
+function exportSave() {
+  const blob = new Blob([JSON.stringify(save, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = 'movimiento-es-vida-partida.json';
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+async function importSave(file) {
+  try {
+    if (!file || file.size > 300000) throw 0;
+    const p = JSON.parse(await file.text());
+    const slot = restore(p.slot);
+    if (!slot && !Array.isArray(p.endings)) throw 0;
+    save = { version: 2, slot, endings: Array.isArray(p.endings) ? p.endings.filter(e => typeof e === 'string') : [] };
+    persist(); $('menu').close(); toast('Partida importada.');
+    if (slot) { game = slot; shown = paragraphs(game).length; showGame(); } else showTitle();
+  } catch { toast('Ese archivo no es una partida válida.'); }
+}
+
+/* ---------- Arranque ---------- */
+function boot() {
+  load();
+  $('newGame').onclick = () => {
+    if (save.slot) { $('nameForm').hidden = true; $('confirmNew').hidden = false; } else askName();
+  };
+  $('confirmYes').onclick = askName;
+  $('nameForm').onsubmit = e => { e.preventDefault(); startNew($('heroName').value); };
+  $('nameCancel').onclick = () => { $('nameForm').hidden = true; };
+  $('confirmNo').onclick = () => { $('confirmNew').hidden = true; };
+  $('continue').onclick = continueGame;
+  for (const id of ['openJournal', 'openJournalTop']) $(id).onclick = () => openJournal('pistas');
+  for (const id of ['openMenu', 'openMenuTop']) $(id).onclick = () => $('menu').showModal();
+  for (const b of document.querySelectorAll('[data-tab]')) b.onclick = () => openJournal(b.dataset.tab);
+  for (const b of document.querySelectorAll('[data-close]')) b.onclick = () => b.closest('dialog').close();
+  $('toTitle').onclick = () => { $('menu').close(); showTitle(); };
+  $('restart').onclick = () => { $('menu').close(); showTitle(); askName(); };
+  $('export').onclick = exportSave;
+  $('import').onchange = e => importSave(e.target.files[0]);
+  document.addEventListener('keydown', e => {
+    if (!game || $('game').hidden || document.querySelector('dialog[open]')) return;
+    const n = parseInt(e.key, 10);
+    if (n >= 1 && n <= 9) {
+      const all = [...document.querySelectorAll('#scene .choice')];
+      if (all[n - 1] && !all[n - 1].disabled) all[n - 1].click();
+    } else if ((e.key === ' ' || e.key === 'Enter') && document.activeElement === document.body) {
+      const more = document.querySelector('#scene .btn.primary');
+      if (more) { e.preventDefault(); more.click(); }
+    }
+  });
+  showTitle();
+}
+boot();
+
+</script>
+</body>
+</html>
