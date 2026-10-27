@@ -116,25 +116,30 @@ dialog::backdrop{background:rgba(10,12,11,.8)}
 .name-input:focus{outline:none;border-color:rgba(214,163,92,.7)}
 .name-input::placeholder{color:rgba(232,226,212,.3)}
 
+
+.scene-title{font-size:clamp(1.7rem,4vw,2.4rem);line-height:1.2;margin:.65rem 0}
+.checkpoint{padding:1rem 0;border-bottom:1px solid var(--line)}.checkpoint .btn{margin:.5rem .5rem 0 0}.checkpoint-heading{margin-top:1.5rem}.reading-mode{display:flex;gap:.6rem;margin-top:1rem;align-items:center}.reading-mode input{width:1.2rem;height:1.2rem;accent-color:var(--ember)}.stat-word{text-align:right}.story p{overflow-wrap:anywhere}.side-actions{position:sticky;bottom:0;background:var(--panel)}.tabs{flex-wrap:wrap}.scene h1:focus{outline:none}
+@media(max-width:820px){.stats.mobile .stat-head{font-size:.7rem}.stats.mobile .stat-word{font-size:.65rem}.stats.mobile{grid-template-columns:repeat(3,minmax(0,1fr))}.topbar{position:relative}.stats.mobile .bar{margin-top:.25rem}.topbar .place{max-width:45vw}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
 </style>
-</head>
+<meta name="description" content="Movimiento es vida: una ficción interactiva de supervivencia y vínculos. Edición Réplica, completa y sin conexión."></head>
 <body>
 
 <main id="title" class="title" hidden>
   <p class="eyebrow">Ficción interactiva · Thriller de supervivencia</p>
   <h1>Movimiento<br>es <em>vida.</em></h1>
   <div class="premise">
-    <p>Puerto Gris, una ciudad de puerto. El lunes, algo salió por los ductos de aire de un edificio del Comité Nacional de Salud. Los enfermos no muerden ni gritan: escuchan. Dentro de un sitio cerrado se quedan con la última voz clara que oyen y caminan hacia quien la dijo.</p>
-    <p>Eres el técnico que revisó ese ducto. Tu pareja, Andreína, no contesta el teléfono. Tu vecina Juliet acaba de leer la nota que le dejaste debajo de la puerta.</p>
+    <p>Puerto Gris. Un incidente en el anexo del Comité y una orden de callarlo. Al día siguiente, un vecino repite tus palabras y te pide que no lo dejes solo.</p>
+    <p>Eres un técnico de climatización. Andreína, tu pareja, investiga lo ocurrido. Juliet, tu vecina, tiene una mochila lista y sus propios planes. Durante los próximos días tendrás que aprender a cuidarlos sin decidir por ellos.</p>
   </div>
   <ul class="howto">
-    <li>Lees y eliges. Hablar también es una decisión.</li>
-    <li>Tus provisiones, tu cansancio y tu exposición cuentan. Juliet y Andreína recuerdan lo que haces.</li>
-    <li>Hay 17 finales. La partida se guarda sola en este navegador.</li>
+    <li>Una historia completa de supervivencia, vínculos y decisiones. Cinco días de decisiones, un prólogo y epílogos semanas después.</li>
+    <li>La voz puede crear una fijación. El contagio requiere exposición física. Las reglas se descubren durante la historia.</li>
+    <li>17 desenlaces, guardado automático, tres puntos manuales y exportación. Funciona sin internet. No usa IA durante la partida.</li>
   </ul>
   <div class="title-actions">
     <button id="continue" class="btn primary wide" hidden><span>Continuar</span><span id="continueWhere" class="muted small"></span></button>
-    <button id="newGame" class="btn wide">Nueva partida</button>
+    <button id="newGame" class="btn primary wide">Nueva partida</button><button id="titleMenu" class="btn wide">Importar, exportar y ajustes</button>
   </div>
   <div id="confirmNew" class="confirm" hidden>
     <p class="small">Esto borra la partida en curso. Los finales que ya viste se conservan.</p>
@@ -142,7 +147,7 @@ dialog::backdrop{background:rgba(10,12,11,.8)}
   </div>
   <form id="nameForm" class="confirm" hidden autocomplete="off">
     <label for="heroName" class="small">¿Cómo te llamas?</label>
-    <p class="muted small" style="margin-top:.2rem">Es el nombre que te dirán los vecinos, Juliet y Andreína. Y lo que los enfermos van a repetir.</p>
+    <p class="muted small" style="margin-top:.2rem">Es el nombre que usarán los personajes. Todos los personajes con rutas sentimentales son adultos.</p>
     <input id="heroName" class="name-input" maxlength="24" placeholder="León" spellcheck="false">
     <div class="row"><button type="submit" class="btn primary">Empezar</button><button type="button" id="nameCancel" class="btn">Cancelar</button></div>
   </form>
@@ -181,7 +186,7 @@ dialog::backdrop{background:rgba(10,12,11,.8)}
 
 <dialog id="journal" aria-label="Diario">
   <div class="dlg-head"><h2>Diario</h2><button class="btn" data-close>Cerrar</button></div>
-  <div class="tabs"><button data-tab="pistas">Pistas</button><button data-tab="recorrido">Recorrido</button></div>
+  <div class="tabs"><button data-tab="pistas">Pistas</button><button data-tab="estado">Estado</button><button data-tab="recorrido">Recorrido</button></div>
   <div id="journalBody"></div>
 </dialog>
 
@@ -189,1296 +194,279 @@ dialog::backdrop{background:rgba(10,12,11,.8)}
   <div class="dlg-head"><h2>Partida</h2><button class="btn" data-close>Cerrar</button></div>
   <div class="menu-list">
     <button id="export" class="btn">Exportar partida (.json)</button>
-    <label class="btn">Importar partida<input id="import" type="file" accept="application/json,.json" hidden></label>
+    <button id="importButton" class="btn">Importar partida (.json)</button><input id="import" type="file" accept="application/json,.json" hidden>
     <button id="toTitle" class="btn">Volver al título</button>
     <button id="restart" class="btn">Empezar de nuevo</button>
   </div>
-  <p class="muted small" style="margin-top:1rem">La partida se guarda en este navegador después de cada decisión. Exporta una copia para conservarla o seguir en otro dispositivo.</p>
+  <label class="reading-mode"><input id="stepMode" type="checkbox"> Leer párrafo a párrafo</label><h3 class="checkpoint-heading">Tres puntos de guardado</h3><div id="checkpoints"></div><p class="muted small" style="margin-top:1rem">El tiempo avanza al decidir, no mientras lees. El guardado pertenece a este navegador: exporta copias para conservarlo. Los puntos manuales permiten explorar otra elección sin borrar los finales descubiertos.</p>
 </dialog>
 
 <p id="toast" class="toast" role="status" hidden></p>
 
 <script>
-/* =========================================================
-   MOVIMIENTO ES VIDA — historia
-   Formato de cada escena (nodo):
-     id, place, when, body(s) -> [párrafos], choices[], ending?, enter?
-   Cada opción: id, label, hint?, next, effects?, effectsOf?(s),
-     flags?, clues?, hidden?(s), enabled?(s), locked?, fork?(s)
-   ========================================================= */
-
-const has = (s, f) => s.flags.includes(f);
-const w = (...a) => a.filter(Boolean);
-
-// Estado de Andreína según lo que León le haya dado (voz, nombre, contacto)
-const andreina = s =>
-  has(s, 'opened_slit') || has(s, 'answered_night') ? 'imprinted'
-  : has(s, 'spoke_door') || has(s, 'called_early') ? 'fraying'
-  : 'clear';
-const exhausted = s => s.stats.fatigue >= 4 && s.stats.provisions <= 0;
-const feverish = s => s.stats.exposure >= 3;
-const hasProof = s => has(s, 'told_brown') || has(s, 'has_log');
-const canDrive = s => !has(s, 'on_foot') && s.stats.fuel >= 1;
-
-const STORY = {
-  start: 'anexo',
-  initialStats: { provisions: 2, fatigue: 1, closeness: 2, signal: 2, exposure: 0, fuel: 3 },
-  maxStats: { provisions: 5, fatigue: 5, closeness: 8, signal: 8, exposure: 3, fuel: 5 },
-  codex: {},
-  nodes: {}
+'use strict';
+/* Movimiento es vida · reconstrucción. Motor independiente del DOM.
+   Biología ficticia: contacto de saliva/sangre viable con mucosa/herida.
+   La voz modifica fijación, nunca contagio. El deterioro depende del tiempo.
+   Datos editables: SCENES, CODEX, ENDINGS. No hay dependencias ni red. */
+const SCENES={}, MAX={food:8,fuel:6,fatigue:6,trust:10,attraction:8,resentment:8,med:3,barrier:3};
+const has=(s,f)=>s.flags.includes(f), add=(s,f)=>{if(!has(s,f))s.flags.push(f)}, clamp=(v,max)=>Math.max(0,Math.min(max,v));
+const pick=(label,next,change={},hint='',condition=null)=>({label,next,change,hint,condition});
+const scene=(id,title,place,day,body,choices,extra={})=>SCENES[id]={id,title,place,day,body,choices,...extra};
+const para=(...p)=>p.filter(Boolean).join('\n\n');
+const CODEX={
+ echo:['observación','Una repetición','Marcelo repite parte de una frase con su propia voz. Una repetición aislada no permite saber cuánto comprende ni cuánto puede contenerse.'],
+ restraint:['observación','Pedir ayuda y resistirse','Marcelo pidió que no abrieran aunque después lo suplicara. Conserva conciencia de su conducta; esa conciencia puede fluctuar.'],
+ voice:['observación','Una voz no sustituye a otra de golpe','En Las Palmas una conversación prolongada aumenta la atención del enfermo. Tras cambiar de interlocutor conserva frases del anterior. Un sonido puede distraer; una voz repetida construye fijación.'],
+ contact:['confirmado en este mundo','Dos peligros distintos','Rita muestra el protocolo y los registros: la infección se transmite cuando saliva o sangre viable llega a ojos, boca, nariz o una herida. Escuchar no infecta. La proximidad facilita retenciones y salpicaduras; el silencio no protege del contacto.'],
+ surface:['confirmado en este mundo','Fluidos y superficies','En las condiciones estudiadas por el laboratorio, el agente pierde viabilidad al secarse y, en superficies expuestas, antes de una hora. En fluido húmedo protegido puede durar hasta seis horas. No se adivina la edad de una mancha: se aísla y limpia según el protocolo del puesto. Son reglas ficticias de Réplica.'],
+ progression:['confirmado en este mundo','La enfermedad avanza en silencio','El deterioro continúa sin voces. Hay una etapa inicial de resistencia, una fase activa con persuasión y retención, y fases avanzadas de repetición y letargo. No todos progresan igual. La voz decide la fijación, no el ritmo biológico.'],
+ recordings:['observación','Altavoces','Una grabación atrae hacia el aparato y permite aprender fragmentos; no revela dónde está quien grabó. El enfermo puede advertir que la voz no responde. No hay localización por teléfono, nombres ni vínculos a distancia.'],
+ treatment:['confirmado en este mundo','Tratamiento y recuperación','El puesto dispone del tratamiento experimental R-4. Administrado pronto y seguido por observación puede frenar la infección; los casos tardíos requieren rehabilitación y pueden conservar secuelas graves. Una dosis no demuestra curación ni devuelve de inmediato las capacidades.'],
+ log:['documento','La libreta','El registro del lunes y la firma de Brown documentan qué se observó y cuándo. Su utilidad depende de haber anotado el incidente real y de conservar o copiar el original.'],
+ andreina:['testimonio','La llamada de Andreína','Andreína investiga el anexo. Durante una entrevista, saliva de un trabajador alcanzó su ojo. Ella misma informa esa exposición. Su evolución depende del tiempo y de recibir atención, nunca de conversaciones que ocurran lejos de ella.'],
+ brown:['documento','El incidente del anexo','Una línea de muestras clínicas se rompió durante mantenimiento. El equipo manipuló condensado contaminado y se frotó ojos o heridas. El circuito de refrigeración no propagó una nube infecciosa por toda la ciudad. Brown ocultó el incidente y después emitió recomendaciones incompletas.'],
+ consent:['acuerdo','Un cuidado que no depende de promesas','Las personas lúcidas pueden dejar instrucciones anticipadas. El equipo usa una separación física, turnos, protección contra salpicaduras y notas. Ninguna petición de abrir elimina por sí sola el riesgo.']
 };
-const N = node => { STORY.nodes[node.id] = node; };
-
-/* ---------- Diario: pistas que el jugador va reuniendo ---------- */
-STORY.codex = {
-  regla: { title: 'La regla del segundo piso',
-    text: 'Dentro de un cuarto o un pasillo cerrado, el afectado se queda con la última voz clara que oye y camina hacia quien la dijo. No muerde ni golpea: empuja. Y no se detiene mientras esa voz siga hablando.' },
-  golpes: { title: 'Los golpes',
-    text: 'Llaman a las puertas con tu mismo ritmo, un segundo tarde. No piden que abras: piden que contestes. Si devuelves el ritmo, les enseñas el tuyo.' },
-  hvac: { title: 'El retorno del anexo',
-    text: 'El lunes a las 3:42 p. m., el retorno de aire del anexo del Comité olía a metal caliente y almendra. Brown te pidió que lo anotaras como «filtro saturado». La libreta tiene su firma y la hora.' },
-  doctrina: { title: 'Movimiento es vida',
-    text: 'Brown dice: no te quedes en un sitio cerrado y no te juntes con mucha gente. La radio oficial dice lo contrario: quédense en casa, digan su nombre en los refugios. Los dos no pueden estar cuidándote a la vez.' },
-  llamada: { title: 'Las cuatro y diez',
-    text: 'Andreína llamó a Juliet desde la verja del anexo. Repitió «¿el edificio?», le dijo que no abriera si llamaban y no colgó. Al fondo se oían golpes. Juliet cortó.' },
-  brown_contra: { title: 'No confíes en el que te dijo que te muevas',
-    text: 'Andreína conoce a Brown y lo contradice. Puede que él tenga razón sobre los cuartos cerrados y mienta en todo lo demás.' },
-  radio_oficial: { title: 'Permanezcan en sus domicilios',
-    text: 'La emisora oficial pide calma, quedarse en casa y decir el nombre en voz alta en los refugios para el conteo. Si esto aprende voces, el conteo es una trampa. Al fondo de la transmisión, alguien repite a la locutora un segundo tarde.' },
-  mara: { title: 'La persiana de Las Palmas',
-    text: 'En la gasolinera, alguien encerrado en el local de al lado repetía lo que oía a través de la persiana. Se agitaba con el crujir de la grava y se quedaba quieto con el motor apagado.' },
-  replica: { title: 'Réplica',
-    text: 'No es el virus que dicen los noticieros. Salió por los ductos de aire del anexo. Se contagia en el aire de los sitios cerrados y por contacto. La primera señal es fiebre y repetir frases ajenas. Después, el afectado se queda con la última voz clara que oye y camina hacia quien la dijo.' },
-  rita: { title: 'La bondad también contesta',
-    text: 'Rita les hablaba a sus pacientes para que no tuvieran miedo. Ellos se quedaron con su frase. Dentro de un cuarto, consolar es regalar tu voz.' },
-  frecuencia: { title: 'La voz de Andreína',
-    text: 'Andreína transmite con el radio de un taxi desde el estacionamiento del edificio Costa, nivel 2. Todavía se corrige cuando se le escapa un nombre. Si repite el eslogan oficial y no se corrige, la frase ya no es suya.' },
-  ortega: { title: 'La capitana Ortega',
-    text: 'Está a cargo del control en la entrada de la capital. Cree en papeles con hora y firma. No cree en gente asustada.' }
-};
-
-/* =========================================================
-   PRÓLOGO
-   ========================================================= */
-
-N({ id: 'anexo', place: 'Azotea del anexo del Comité', when: 'Lunes · 3:40 p. m.',
-  body: () => [
-    'Puerto Gris es una ciudad de puerto, humedad y aires acondicionados. De esos aparatos vives tú: eres {nombre}, técnico de climatización. Te ocupas del edificio Costa, donde vives, y desde hace un año de un contrato mejor pagado: el anexo técnico del Comité Nacional de Salud, dos calles más abajo.',
-    'Hoy te llamaron de urgencia. En la azotea del anexo, la rejilla del retorno de aire está tibia, y lo que sale de ella huele a metal caliente y, por debajo, a almendra amarga. Nunca has olido nada igual en un ducto.',
-    'A tu lado está el doctor Brown, el hombre de la credencial azul que firma las órdenes de trabajo. Se cubre la nariz con un pañuelo y no te mira.',
-    '—Anótalo como filtro saturado —dice—. Cambias el filtro, sellas la compuerta y te vas a tu casa. Y {nombre}: tu pareja es periodista, ¿verdad? Esto no sale de aquí.',
-    'Tienes la libreta de mantenimiento abierta. Todo lo que anotes ahí lleva tu letra, la hora y la firma de Brown al margen.'
-  ],
-  choices: [
-    { id: 'falso', label: 'Escribir lo que te dicta: «filtro saturado».',
-      hint: 'Es su edificio y su firma. No es tu problema.',
-      flags: ['log_false'], clues: ['hvac'], next: 'pasillo' },
-    { id: 'verdad', label: 'Escribir lo que hueles: «metal caliente y almendra en el retorno, 3:42 p. m.»',
-      hint: 'Tu letra. Tu nombre. Tu problema.',
-      flags: ['log_truth'], clues: ['hvac'], next: 'pasillo' }
-  ]
-});
-
-N({ id: 'pasillo', place: 'Edificio Costa · segundo piso', when: 'Martes · 5:10 p. m.',
-  body: s => w(
-    has(s, 'log_truth')
-      ? 'Brown leyó lo que escribiste, se quedó un rato callado y firmó al margen. «Tienes buena letra para meterte en problemas», dijo. Eso fue ayer.'
-      : 'Brown leyó «filtro saturado», asintió y firmó al margen. Te dio las gracias como quien paga una propina. Eso fue ayer.',
-    'Hoy, a las once de la mañana, te llegó un mensaje suyo: «No respondas a los golpes. No hables dentro de cuartos cerrados. Muévete. No se lo digas a la prensa». No lo entendiste. A las cinco y diez, subiendo por la escalera del edificio Costa, empiezas a entenderlo.',
-    'En el segundo piso, doña Iris golpea la puerta del 2C, donde vive su hijo Mateo, de veintitantos años. Golpea con los nudillos: dos cortos, uno largo. Desde adentro le devuelven el mismo ritmo, un segundo tarde.',
-    '—Mateo, abre, mi amor —dice ella.',
-    '«Mateo, abre, mi amor», repite la puerta, con la voz de Mateo y la entonación exacta de Iris.',
-    'La puerta se abre. Mateo sale despacio, sin camisa y con los ojos muy abiertos. No la ataca. Camina hacia ella repitiendo la frase y la empuja con el pecho, suave e implacable, hasta dejarla contra la pared del pasillo. Iris sigue hablándole para calmarlo. Cada palabra que dice lo acerca más.'
-  ),
-  choices: [
-    { id: 'gritar', label: 'Gritarle a Iris que se calle.',
-      hint: 'Una voz clara en un pasillo cerrado.',
-      effects: { exposure: 1 }, flags: ['shouted_iris'], next: 'pasillo_despues' },
-    { id: 'baranda', label: 'Golpear la baranda dos pisos más arriba, lejos de ellos.',
-      hint: 'Un ruido que no sea una voz.',
-      flags: ['banged_rail'], clues: ['golpes'], next: 'pasillo_despues' },
-    { id: 'quieto', label: 'No hacer ningún ruido. Seguir subiendo.',
-      hint: 'Iris no es tu responsabilidad. Mateo tampoco.',
-      flags: ['froze_iris'], next: 'pasillo_despues' }
-  ]
-});
-
-N({ id: 'pasillo_despues', place: 'Escalera de servicio', when: 'Martes · 5:14 p. m.',
-  enter: { clues: ['regla'] },
-  body: s => w(
-    has(s, 'shouted_iris') &&
-      '—¡Cállese! —gritas. Mateo gira la cabeza hacia ti como si alguien hubiera encendido una luz en la escalera. Da un paso en tu dirección. Entonces Iris, asustada, dice «¿{nombre}?», y Mateo vuelve hacia ella. La última voz era la de ella. Subes los escalones de dos en dos con la boca cerrada.',
-    has(s, 'banged_rail') &&
-      'Golpeas el metal con la llave inglesa: tres golpes secos. Mateo se detiene y ladea la cabeza, buscando el sonido. Iris aprovecha, se escurre hacia su apartamento y cierra. Mateo se queda en el pasillo, mirando hacia arriba. No vuelve a moverse mientras no hay ruido.',
-    has(s, 'froze_iris') &&
-      'Subes sin hacer ruido. Detrás de ti, Iris sigue hablándole a su hijo con la voz con que se calma a un niño. Cuando llegas al tercer piso todavía la oyes. Cuando llegas al cuarto, ya no.',
-    'Ahora entiendes el mensaje de Brown. Dentro de un sitio cerrado, el que está enfermo se queda con la última voz clara que oye y camina hacia quien la dijo. No muerde. No se detiene.',
-    'En el cuarto piso deslizas una nota por debajo de la puerta del 4B, donde vive Juliet: «No confíes en nadie del edificio. Si golpean, no respondas. No abras aunque sea una voz conocida». No la firmas. No hace falta.',
-    'Bajas al descanso entre el tercer piso, donde vives con Andreína, y el cuarto. Andreína es periodista; a esta hora debería estar en la redacción. La llamas dos veces. No contesta.'
-  ),
-  choices: [
-    { id: 'seguir', label: 'Seguir.', next: 'escalera_servicio' }
-  ]
-});
-
-/* =========================================================
-   ACTO 1 · EL EDIFICIO
-   ========================================================= */
-
-N({ id: 'escalera_servicio', place: 'Escalera de servicio', when: 'Martes · tarde',
-  body: () => [
-    'El edificio Costa ya no suena como un edificio. No hay televisores ni licuadoras. Hay puertas cerradas y, de vez en cuando, golpes que no son de nadie que conozcas.',
-    'Arriba, en el 4B, Juliet ya habrá leído la nota. Abajo, en el 3A, está tu casa. Andreína sigue sin contestar.'
-  ],
-  choices: [
-    { id: 'subir', label: 'Subir al 4B.', hint: 'Juliet leyó la nota. Te está esperando o te tiene miedo.', next: 'cuatro_b' },
-    { id: 'casa', label: 'Pasar primero por tu apartamento.',
-      hint: 'Andreína debería estar en la redacción. Debería.',
-      effects: { signal: 1 }, flags: ['went_home'], next: 'puerta' },
-    { id: 'llamar', label: 'Llamar a Andreína otra vez, desde aquí.',
-      hint: 'El hueco de una escalera también es un sitio cerrado.', next: 'llamada_escalera' }
-  ]
-});
-
-N({ id: 'llamada_escalera', place: 'Escalera de servicio', when: 'Martes · tarde',
-  body: () => [
-    'El tono suena dos veces. A la tercera, alguien contesta y no dice nada. Después oyes tu propio mensaje del buzón, repetido mal, con tu voz: «Soy {nombre}, déjame un mensaje». Luego, muy cerca del micrófono, tres golpes. El mismo ritmo con que tú tocas una puerta.',
-    'Cuelgas. Ya tienen tu voz grabada. Lo único que no les diste fue lo que pensaste después.'
-  ],
-  choices: [
-    { id: 'no_marcar', label: 'No volver a marcar. Subir con Juliet.',
-      hint: 'Ya saben cómo suenas cuando dejas un mensaje.',
-      effects: { signal: 1, exposure: 1 }, flags: ['called_early'], clues: ['golpes'], next: 'cuatro_b' },
-    { id: 'bajar', label: 'Bajar a tu puerta de todos modos.',
-      effects: { signal: 1 }, flags: ['called_early', 'went_home'], next: 'puerta' }
-  ]
-});
-
-N({ id: 'puerta', place: 'Tu pasillo · 3A', when: 'Martes · tarde',
-  body: () => [
-    'La puerta está cerrada por dentro. Andreína siempre cierra con seguro. Golpeas como siempre —dos cortos, uno largo— y desde adentro te devuelven el ritmo, un segundo tarde.',
-    'Después, su voz, clara y fuera de lugar: «Ya llegué». Una pausa demasiado larga. «Ya llegué».'
-  ],
-  choices: [
-    { id: 'papel', label: 'No abrir. Pasarle un papel: que no le conteste a nadie, ni siquiera a ti.',
-      hint: 'La misma nota que le dejaste a Juliet. Sin voz.',
-      flags: ['note_for_her'], clues: ['golpes'], next: 'cuatro_b' },
-    { id: 'hablar', label: 'Hablarle sin abrir, lo justo para saber si es ella.',
-      hint: 'Cada frase clara le dice dónde estás.', next: 'hablar_puerta' },
-    { id: 'rendija', label: 'Abrir una rendija.',
-      hint: 'Quieres verle la cara. Ella también quiere ver la tuya.', next: 'rendija' }
-  ]
-});
-
-N({ id: 'hablar_puerta', place: 'Tu pasillo · 3A', when: 'Martes · tarde',
-  body: () => [
-    '—Andreína, soy yo. No abras tú tampoco.',
-    'Silencio. Luego te devuelve tu frase, sin el enojo ni el cansancio que ella le pondría: «Soy yo». Otra vez: «Soy yo». No te pregunta por la pelea de anoche. No dice tu nombre. Repite lo último que oyó, y lo último fuiste tú.',
-    'Te apartas antes de corregirla. Corregirla sería darle más voz.'
-  ],
-  choices: [
-    { id: 'irse', label: 'Dejar la puerta y subir al 4B.',
-      effects: { exposure: 1, signal: 2 }, flags: ['spoke_door'], clues: ['golpes'], next: 'cuatro_b' }
-  ]
-});
-
-N({ id: 'rendija', place: 'Tu pasillo · 3A', when: 'Martes · tarde',
-  body: () => [
-    'La cadena está puesta. Por la rendija ves un ojo de Andreína y, detrás, la lámpara del recibidor que ella odia dejar encendida. No está herida. Está atenta, como quien espera el resto de una canción.',
-    'Saca la mano sin violencia, como para saludarte. Te roza la muñeca. Tiene la piel caliente. Dices su nombre sin querer. Ella sonríe con la mitad de la cara que alcanzas a ver y repite, despacio, el nombre que acabas de decir.',
-    'Cierras. La cadena golpea la madera.'
-  ],
-  choices: [
-    { id: 'correr', label: 'Correr al 4B sin mirar atrás.',
-      effects: { exposure: 1, signal: 2 }, flags: ['opened_slit', 'she_has_name'], clues: ['golpes'], next: 'cuatro_b' }
-  ]
-});
-
-N({ id: 'cuatro_b', place: 'Apartamento 4B', when: 'Martes · tarde',
-  body: s => w(
-    'Juliet abre antes del segundo golpe, como si llevara rato parada detrás de la puerta. Es enfermera en el Hospital del Puerto; hoy tenía el día libre. Son vecinos desde hace dos años: cafés en la azotea, paquetes recibidos, una noche larga en que se fue la luz y nadie tuvo prisa por despedirse.',
-    'El 4B huele a jabón de romero y a ropa recién planchada. Tiene tu nota en la mano. El papel está blando de tanto doblarlo.',
-    '—«No confíes en nadie del edificio» —lee, en voz baja—. «Si golpean, no respondas». Sin firma. Qué considerado, {nombre}.',
-    (has(s, 'went_home') || has(s, 'called_early')) && 'Te mira las manos antes que la cara. —¿Y Andreína? ¿La viste?',
-    'Hace meses que las cosas con Andreína no van bien, y Juliet lo sabe porque las paredes del Costa son finas. Nunca lo han hablado.',
-    'Ella podría atrincherarse aquí hasta mañana: tiene arroz y todavía hay presión de agua en el cuarto piso. Pero tú tienes la frase de Brown en la cabeza: muévete.'
-  ),
-  choices: [
-    { id: 'brown', label: 'Contarle lo del anexo, el olor y el mensaje de Brown.',
-      hint: 'Todo lo que sabes. Nada de lo que sientes.',
-      effects: { closeness: 1 }, flags: ['told_brown'], clues: ['doctrina'], next: 'preparativos' },
-    { id: 'sentir', label: 'Decirle que sientes algo por ella, antes de que el día se acabe.',
-      hint: 'No es el momento. Quizás no habrá otro.',
-      effects: { closeness: -1 }, flags: ['rushed'], next: 'preparativos' },
-    { id: 'atrinchera', label: 'Proponerle que se encierren aquí hasta entender más.',
-      hint: 'Agua, arroz, una puerta. Brown diría que es una tumba.',
-      flags: ['wanted_barricade'], next: 'preparativos' },
-    { id: 'solo_golpes', label: 'Hablarle solo de los golpes. Guardarte lo de Brown.',
-      hint: 'Menos pánico. También menos verdad.',
-      flags: ['hid_brown'], clues: ['golpes'], next: 'preparativos' }
-  ]
-});
-
-N({ id: 'preparativos', place: 'Cocina del 4B', when: 'Martes · tarde',
-  body: s => [
-    has(s, 'rushed')
-      ? 'Juliet deja la nota sobre la mesa. —Te creo lo de los golpes. Lo otro no me lo digas hoy. No aquí, no mientras me pides que me vaya contigo. —No es un no para siempre. Pero tampoco te lo va a poner fácil.'
-      : has(s, 'told_brown')
-        ? 'No se ríe. Copia el mensaje de Brown en el reverso de un recibo, con letra de quien anota dosis. —Brown. El del Comité. Andreína lo mencionó una vez, de pasada, como quien no quiere deberle nada a nadie. —Te mira—. Si nos quedamos, se acaba el agua y alguien va a golpear. Si nos vamos, nos vamos ligeros.'
-        : has(s, 'wanted_barricade')
-          ? '—Podemos —dice—. Tengo arroz, y todavía hay agua. Pero no subiste hasta aquí para encerrarte. Se te nota en los hombros. —Pone una mochila vacía sobre la mesa—. Decide como si yo pudiera decirte que no. Porque puedo.'
-          : 'Le hablas de los golpes y de la gente que deja de contestar con su propia voz. Nada del anexo, nada de Brown. Juliet asiente despacio, que es su manera de guardarse una pregunta. —Entonces no nos quedamos a comprobarlo.',
-    'En la mochila caben agua, arroz, una linterna y el botiquín pequeño de Juliet. En el sótano, en el cuarto de mantenimiento, está el botiquín grande del edificio. La llave la tienes tú. Pero bajar cuesta tiempo, y el tiempo hace ruido.'
-  ],
-  choices: [
-    { id: 'botiquin', label: 'Bajar al cuarto de mantenimiento por el botiquín grande.',
-      hint: 'La llave es tuya. Tu libreta también está ahí.', next: 'botiquin' },
-    { id: 'avisos', label: 'Avisar por escrito a los otros pisos, sin hablar con nadie.',
-      hint: 'Minutos de más. Gente que quizás lea.',
-      effects: { fatigue: 1, closeness: 1 }, flags: ['warned_neighbors'], next: 'avisos' },
-    { id: 'salir', label: 'Salir ya, con lo que hay.', next: 'escaleras_incendio' }
-  ]
-});
-
-N({ id: 'botiquin', place: 'Cuarto de mantenimiento · sótano', when: 'Martes · tarde',
-  body: s => w(
-    'Huele a detergente y, muy débil, a la misma almendra del anexo, pegada a la ropa de trabajo que dejaste colgada ayer. Llenas el botiquín: gasas, yodo, antitérmico, sales de rehidratación.',
-    'En el estante está tu libreta de mantenimiento, con la anotación del lunes y la firma de Brown al margen. Te la guardas. Todavía no sabes si es una prueba o un problema.',
-    has(s, 'log_truth')
-      ? 'La relees: «metal caliente y almendra, 3:42 p. m.», y la firma de Brown debajo. Él firmó la verdad. Eso puede valer mucho, o puede costarte caro.'
-      : 'La relees: «filtro saturado», y la firma de Brown debajo. Tu letra contando una mentira ajena.',
-    'Del otro lado de la pared, algo repite el golpe con que ayer revisaste una tubería. Desde este lado nadie contesta. Por eso sigues siendo tú.'
-  ),
-  choices: [
-    { id: 'subir', label: 'Volver por Juliet y salir por la escalera de incendios.',
-      effects: { provisions: 2 }, flags: ['has_log', 'has_kit'], clues: ['hvac'], next: 'escaleras_incendio' }
-  ]
-});
-
-N({ id: 'avisos', place: 'Pasillos del Costa', when: 'Martes · tarde',
-  body: () => [
-    'Metes la misma frase por debajo de tres puertas: «No contesten a los golpes. Ni siquiera si es una voz conocida». En el 3C alguien arrastra una silla justo cuando entra el papel. No dices nada.',
-    'Juliet te espera con la mochila cerrada. No te reclama los minutos. Te toca el codo, una vez, como se toca a alguien que vuelve de un mandado peligroso.'
-  ],
-  choices: [
-    { id: 'bajar', label: 'Bajar.', clues: ['golpes'], next: 'escaleras_incendio' }
-  ]
-});
-
-N({ id: 'escaleras_incendio', place: 'Escalera de incendios', when: 'Martes · última luz',
-  body: () => [
-    'Por la escalera de incendios entra el viento sucio de la calle. En el descanso del segundo piso está don Marcelo, el vecino del 2A, en pijama y descalzo, con una taza vacía en la mano, como si se le hubiera olvidado el café a mitad del gesto.',
-    '—¿Me repites cómo te llamas? —pregunta, amable—. Lo tengo en la punta de la lengua y no me sale.',
-    'Juliet te aprieta la correa de la mochila. No es un tirón. Es una instrucción.'
-  ],
-  choices: [
-    { id: 'callar', label: 'Seguir sin decir nada. Ni siquiera «perdón».',
-      hint: 'La buena educación también es una voz.', next: 'calle' },
-    { id: 'nombre', label: 'Decirle tu nombre. Lleva años siendo tu vecino.',
-      effects: { exposure: 1 }, flags: ['answered_marcelo'], next: 'calle' },
-    { id: 'agua', label: 'Dejarle media botella de agua sin decir una palabra.',
-      hint: 'La sed no se contesta con un nombre.',
-      effects: { provisions: -1, closeness: 1 }, flags: ['mercy'],
-      enabled: s => s.stats.provisions >= 1, locked: 'No te sobra ni el agua.', next: 'calle' }
-  ]
-});
-
-/* =========================================================
-   ACTO 2 · LA CARRETERA
-   ========================================================= */
-
-N({ id: 'calle', place: 'Calles de Puerto Gris', when: 'Martes · atardecer',
-  body: () => [
-    'Puerto Gris no está en llamas. Sería más fácil de creer. La gente camina, y algunos caminan hacia una voz que tú no oyes, con cara de ir tarde a algún lado. Un carro cruza la avenida con las puertas abiertas y el radio a todo volumen. La locutora pide calma: quédense en sus casas, no salgan, no saturen las líneas.',
-    'Brown dijo lo contrario. Media cuadra más adelante hay una camioneta gris con las llaves puestas y el tanque a poco más de la mitad. Adentro no hay sangre. Hay un termo frío y un mapa de la provincia manchado de café.'
-  ],
-  choices: [
-    { id: 'radio', label: 'Llevarte el radio portátil del carro abandonado.',
-      hint: 'Pesa. También informa. Y a veces repite.',
-      flags: ['took_radio'], clues: ['radio_oficial'], next: 'camioneta' },
-    { id: 'nada', label: 'No tocar nada que haga ruido. Solo la camioneta.', next: 'camioneta' }
-  ]
-});
-
-N({ id: 'camioneta', place: 'Carretera vieja del norte', when: 'Martes · horas después',
-  enter: { effects: { fuel: -1 } },
-  body: s => w(
-    'Manejas hasta que el puerto desaparece del retrovisor. Juliet no enciende nada. El campo es feo de una manera que tranquiliza: alambradas, un anuncio de fertilizante, ningún golpe.',
-    has(s, 'took_radio') && 'El radio va en el piso, apagado, como un animal al que conviene no despertar.',
-    'Cuando el cielo se pone del color del papel viejo, Juliet habla sin mirarte. —Oye. Hay algo que no te he contado. Andreína me llamó antes de que llegaras.',
-    'El motor sigue. Tus manos también.'
-  ),
-  choices: [
-    { id: 'exacto', label: '«¿Qué dijo, exactamente?»',
-      hint: 'La pregunta de quien quiere sobrevivir, no de quien quiere tener razón.',
-      effects: { closeness: 1 }, flags: ['asked_exact'], next: 'relato' },
-    { id: 'porque', label: '«¿Por qué esperaste hasta ahora?»',
-      effects: { closeness: -1 }, flags: ['asked_why'], next: 'relato' },
-    { id: 'bien', label: '«¿Está bien?»',
-      effects: { signal: 1 }, flags: ['asked_ok'], next: 'relato' },
-    { id: 'silencio', label: 'No contestar. Seguir manejando.',
-      effects: { fatigue: 1 }, flags: ['stayed_silent'], next: 'relato_corto' }
-  ]
-});
-
-N({ id: 'relato', place: 'Carretera vieja del norte', when: 'Martes · anochecer',
-  enter: { clues: ['llamada'] },
-  // Si León le ocultó lo de Brown, Juliet lo descubre aquí
-  onEnter: s => has(s, 'hid_brown') && !has(s, 'caught_hiding')
-    ? { effects: { closeness: -1 }, flags: ['caught_hiding'], clues: ['brown_contra'] }
-    : has(s, 'told_brown') ? { clues: ['brown_contra'] } : null,
-  body: s => w(
-    '—A las cuatro y diez. Yo estaba planchando. Me dijo que estaba en la verja del anexo, que había ido a cubrir algo raro y no la dejaban entrar. Me preguntó si tú estabas en el edificio.',
-    has(s, 'asked_exact')
-      ? '—Te lo digo palabra por palabra porque si no, te vas a inventar una llamada más amable.'
-      : has(s, 'asked_why')
-        ? '—Porque en el 4B me estabas mirando como si yo fuera la salida. Quería decírtelo donde pudieras oírme sin poder tocar la puerta de nadie.'
-        : '—No lo sé. Por eso no te lo dije en la cocina. Si te digo que no lo sé, das la vuelta. Y no sé si volver mata a alguien.',
-    'Juliet no aparta la vista de la cuneta. —Le pregunté: «¿El edificio?». Y me lo devolvió: «¿El edificio?». Dos veces, como si le gustara cómo sonaba. Después me dijo: no abras si tocan. No colgó. Al fondo se oían golpes. Colgué yo.',
-    'Traga saliva. —Y dijo un nombre. Brown. Dijo: no confíes en el que te dijo que te muevas.',
-    has(s, 'caught_hiding') && 'Entonces te mira de verdad. —Tú ya lo conocías. Se te acaba de mover la cara.',
-    has(s, 'told_brown') && '—Así que Brown te dice que te muevas y Andreína dice que no le creas a Brown —dice—. Y yo en el medio, planchando.',
-    (has(s, 'spoke_door') || has(s, 'opened_slit')) && '—Y tú ya bajaste a tu puerta. Hueles a tu pasillo. No me lo cuentes si no puedes.'
-  ),
-  choices: [
-    { id: 'gracias', label: '«Gracias por colgar. No le diste más voz.»',
-      effects: { closeness: 1 }, flags: ['thanked_cut'], next: 'gasolinera' },
-    { id: 'telefono', label: '«Enséñame la llamada. No voy a marcar.»',
-      flags: ['saw_log'], next: 'gasolinera' },
-    { id: 'volvemos', label: '«Cuando podamos, volvemos por ella.»',
-      effects: { signal: 2, closeness: -1 }, flags: ['plans_return'], next: 'gasolinera' }
-  ]
-});
-
-N({ id: 'relato_corto', place: 'Carretera vieja del norte', when: 'Martes · anochecer',
-  enter: { clues: ['llamada'] },
-  onEnter: s => has(s, 'told_brown') ? { clues: ['brown_contra'] } : null,
-  body: s => w(
-    'Juliet espera un kilómetro. Después habla igual, pero más corto, como quien deja un mensaje que no espera que contesten.',
-    '—A las cuatro y diez. Estaba en la verja del anexo, cubriendo algo. Repetía lo que yo le decía. Me dijo que no abriera si tocaban. Colgué yo, porque la llamada no se colgaba sola.',
-    has(s, 'told_brown')
-      ? '—Y nombró a Brown. Dijo que no confiaras en el que te dijo que te movieras. Como no dijiste nada, el resto me lo guardo. Si quieres más, paras y me lo pides.'
-      : 'No dice más nombres. Tu silencio le enseñó a medir lo que entrega.'
-  ),
-  choices: [
-    { id: 'repetir', label: 'Orillarte y pedirle que te lo cuente despacio.',
-      effects: { closeness: 1 }, flags: ['asked_repeat'], next: 'gasolinera' },
-    { id: 'seguir', label: 'Seguir. Que el motor llene el silencio.',
-      effects: { fatigue: 1 }, flags: ['partial_story'], next: 'gasolinera' }
-  ]
-});
-
-// Escena tomada de la opción A: Mara y la persiana
-N({ id: 'gasolinera', place: 'Gasolinera Las Palmas', when: 'Martes · 7:20 p. m.',
-  enter: { clues: ['mara'] },
-  body: s => w(
-    'La aguja de la gasolina baja más rápido de lo que esperabas. En un cruce aparece una gasolinera con dos luces encendidas, un taller y una tiendita. Detrás del cristal, una silueta no corre: se queda mirando la carretera.',
-    'Sale una mujer de unos cuarenta años con una linterna. En la camisa lleva bordado MARA. Mantiene la puerta cerrada a su espalda.',
-    '—La bomba no funciona. Tengo un galón de reserva y no lo voy a regalar. Mi hermano está en el taller con el tobillo abierto. Necesito medicinas.',
-    'No parece hostil. Parece llevar demasiadas horas decidiendo a quién abrirle.',
-    'Entonces, en el local de al lado, algo golpea la persiana metálica. Tres veces. Una pausa. Otras tres. Mara apaga la linterna y baja la voz. —Lleva ahí desde las cinco. A veces habla. A veces repite lo que oye.',
-    'Desde la persiana llega una voz quebrada: «A veces habla».',
-    has(s, 'has_kit')
-      ? 'Juliet mira la mochila, donde va el botiquín grande. Luego te mira a ti. —Nosotros también lo vamos a necesitar —dice, muy bajito—. Pero él lo necesita hoy.'
-      : 'Juliet mira la mochila, donde solo va su botiquín pequeño. No dice nada.'
-  ),
-  choices: [
-    { id: 'botiquin', label: 'Cambiar medicinas y gasas por el galón.',
-      hint: 'Pierdes provisiones. Ganas gasolina y una deuda a tu favor.',
-      enabled: s => s.stats.provisions >= 2, locked: 'No tienen tanto que ofrecer.',
-      effects: { provisions: -2, fuel: 2, closeness: 1 }, flags: ['helped_mara'], next: 'anochecer' },
-    { id: 'racion', label: 'Ofrecer arroz y el antitérmico por medio galón.',
-      enabled: s => s.stats.provisions >= 1, locked: 'No queda nada que ofrecer.',
-      effects: { provisions: -1, fuel: 1 }, flags: ['traded_mara'], next: 'anochecer' },
-    { id: 'seguir', label: 'Dar las gracias en voz baja y volver a la camioneta.',
-      hint: 'Ni tu medicina ni tu voz se quedan aquí.',
-      effects: { fatigue: 1 }, next: 'anochecer' }
-  ]
-});
-
-N({ id: 'anochecer', place: 'Un cruce sin nombre', when: 'Martes · noche',
-  body: s => w(
-    has(s, 'helped_mara')
-      ? 'Mara cumplió. Antes de que se fueran, les dijo que no se metieran en el polideportivo de la capital: «Allí están contando gente en voz alta».'
-      : has(s, 'traded_mara')
-        ? 'Mara les echó medio galón y cerró la puerta sin despedirse. Era un trato, no un favor.'
-        : 'Dejaron atrás la gasolinera. La persiana siguió repitiendo «a veces habla» hasta que dejaron de oírla.',
-    'El mapa manchado de café tiene tres ideas malas y un espacio en blanco.',
-    'A la derecha, la carretera hacia la capital: más asfalto, más controles, el rumbo que Brown dijo que era el suyo. De frente, un camino de tierra que Juliet reconoce: hizo una temporada en un puesto de salud que casi nunca tiene médico. A la izquierda, el mapa no dice nada, y esta noche eso parece un argumento.',
-    has(s, 'took_radio') && 'Juliet enciende el radio un segundo. La misma locutora, la misma frase. Al fondo, alguien de la emisora la repite con su voz, un poco tarde. Juliet lo apaga.'
-  ),
-  choices: [
-    { id: 'capital', label: 'Seguir hacia la capital.', hint: 'Controles, refugios, el Comité. O lo que quede de él.',
-      hidden: exhausted, enabled: s => s.stats.fuel >= 2, locked: 'La gasolina no alcanza.',
-      effects: { fuel: -1 }, next: 'capital_control' },
-    { id: 'puesto', label: 'Tomar el camino del puesto de salud.', hint: 'Juliet conoce la puerta. No sabe quién la abre ahora.',
-      hidden: exhausted, enabled: s => s.stats.fuel >= 1, locked: 'La gasolina no alcanza.',
-      effects: { fuel: -1 }, next: 'clinica' },
-    { id: 'cobertizo', label: 'Meterse por el camino sin nombre y parar en el primer cobertizo.',
-      hint: 'Parar es justo lo que Brown prohibió. El cuerpo lo pide igual.',
-      hidden: exhausted, next: 'granero' },
-    { id: 'brown', label: 'Llamar a Brown antes de decidir.', hint: 'Una llamada dice dónde estás.',
-      hidden: s => exhausted(s) || !hasProof(s) || has(s, 'brown_call'), next: 'brown_call' },
-    { id: 'orilla', label: 'Ya no pueden más. Parar aquí mismo.',
-      hidden: s => !exhausted(s), next: 'ending_orilla' }
-  ]
-});
-
-N({ id: 'brown_call', place: 'Orilla de la carretera', when: 'Martes · noche',
-  enter: { flags: ['brown_call'], clues: ['replica', 'doctrina'] },
-  body: () => [
-    'Contesta al segundo tono, como si tuviera el celular boca arriba sobre la mesa. —No paren en los pueblos. Juntarse con gente los vuelve fáciles de encontrar. —Es una frase ensayada, dicha ya a varias personas—. Si tienes la libreta, no la lleves a la capital. Entiérrala.',
-    '—¿Enterrarla dónde? ¿Qué salió por ese ducto?',
-    'Una pausa pequeña, humana. —Le decimos Réplica. No es el virus de los noticieros. No le des tu voz a nadie dentro de un cuarto cerrado. Y no me vuelvas a llamar: cada llamada dice dónde estás. —Cuelga. El número se queda iluminado en la pantalla un segundo de más.'
-  ],
-  choices: [
-    { id: 'puesto_off', label: 'Apagar el celular y tomar el camino del puesto.',
-      enabled: s => s.stats.fuel >= 1, locked: 'La gasolina no alcanza.',
-      effects: { fuel: -1 }, flags: ['phone_off'], next: 'clinica' },
-    { id: 'cobertizo_off', label: 'Apagarlo y buscar un cobertizo.', flags: ['phone_off'], next: 'granero' },
-    { id: 'capital_on', label: 'Dejarlo encendido. Seguir hacia la capital.',
-      hint: 'Que los encuentre quien tenga una salida, no quien tenga hambre de voces.',
-      enabled: s => s.stats.fuel >= 2, locked: 'La gasolina no alcanza.',
-      effects: { fuel: -1 }, flags: ['phone_on'], next: 'capital_control' },
-    { id: 'cobertizo_on', label: 'Dejarlo encendido y esconderse igual.',
-      hint: 'El mapa ya no es solo de ustedes.', flags: ['phone_on'], next: 'granero' }
-  ]
-});
-
-N({ id: 'granero', place: 'Cobertizo', when: 'Martes · noche',
-  enter: { effects: { provisions: -1, fatigue: -1 } },
-  body: s => w(
-    'El cobertizo era de herramientas y ahora es de polvo y de un farol que todavía acepta pilas. Cierras la puerta con un alambre. Afuera, grillos. Adentro, el ruido pequeño de dos personas tratando de no parecer un grupo.',
-    'Juliet reparte el arroz frío con la tapa del termo. No habla de Andreína. Habla del farol, de la puerta, de los turnos para dormir. Es su manera de preguntarte cómo estás sin obligarte a decir lo que sientes.',
-    has(s, 'rushed')
-      ? 'Aun así deja un metro de piso entre su manta y la tuya. Ese metro dice bastante.'
-      : s.stats.closeness >= 4
-        ? 'Cuando te pasa el agua, sus dedos no se apartan enseguida de la botella. Tampoco avanzan.'
-        : 'Come de su lado del termo. Tú del tuyo. No es frialdad. Es una distancia que todavía les sirve.'
-  ),
-  choices: [
-    { id: 'cuidar', label: 'Tomarle la temperatura y ofrecerle el antitérmico.',
-      hint: 'Un gesto de oficio, no una excusa.',
-      enabled: s => s.stats.provisions >= 1, locked: 'No queda nada que ofrecer.',
-      effects: { provisions: -1, closeness: 1 }, flags: ['cared'], next: 'golpe_noche' },
-    { id: 'manana', label: 'Preguntarle qué haría en una mañana normal, si esto se acabara mañana.',
-      hint: 'Una pregunta que no es sobre sobrevivir.',
-      effects: { closeness: 1 }, flags: ['asked_morning'], next: 'golpe_noche' },
-    { id: 'verdad', label: 'Contarle la verdad sobre Andreína, sin pedirle que ocupe su lugar.',
-      hint: 'Hace meses que no están bien. Subir al 4B no fue un reemplazo.',
-      effectsOf: s => ({ closeness: has(s, 'rushed') ? 0 : 2 }), flags: ['said_truth'], next: 'golpe_noche' },
-    { id: 'turnos', label: 'Organizar turnos para dormir, espalda con espalda.',
-      hint: 'Vigilar es una manera de estar cerca sin tocarse.',
-      effects: { closeness: 1, fatigue: -1 }, flags: ['turns'], next: 'golpe_noche' },
-    { id: 'mano', label: 'Buscar su mano.',
-      enabled: s => s.stats.closeness >= 4 && !has(s, 'rushed'), locked: 'Todavía no. Se notaría el apuro.',
-      effects: { closeness: 1 }, flags: ['hand'], next: 'golpe_noche' }
-  ]
-});
-
-N({ id: 'golpe_noche', place: 'Cobertizo', when: 'Miércoles · madrugada',
-  body: s => w(
-    has(s, 'cared') && 'Le tomas la temperatura como se hace en el trabajo, no como quien pide permiso. No tiene fiebre. El antitérmico vuelve al bolsillo. Juliet dice «gracias» en el tono de quien acepta un servicio, y no agrega nada.',
-    has(s, 'asked_morning') && 'Lo piensa en serio. —Comprar pan. Ir a casa de mi hermana y dejar que me hable media hora de cualquier tontería. —Gira la tapa del termo entre los dedos—. Siempre digo que quiero viajar. Ahora me conformaría con saber que mi gente está durmiendo en su cama. —Te devuelve la pregunta. Le contestas algo pequeño y verdadero, y ella se ríe por primera vez en todo el día.',
-    has(s, 'said_truth') && (has(s, 'rushed')
-      ? 'Le cuentas que hace meses que Andreína y tú no están bien, y que no subiste al 4B para reemplazarla. Juliet escucha. —Eso ya me lo dijiste, en peor momento. Por lo menos ahora no me pides nada. —No se acerca. Tampoco se va al otro extremo del cobertizo.'
-      : 'Le cuentas que hace meses que Andreína y tú no están bien, y que no subiste al 4B para que ella ocupara un lugar. Juliet tarda en contestar. —Gracias por no pedirme que te responda a eso. —El farol cruje. Se quedan en el mismo piso, un poco menos desconocidos.'),
-    has(s, 'turns') && 'Acuerdan los turnos sin hacerlo romántico. Espalda con espalda, el farol en el medio. Juliet respira como quien por fin puede cerrar los ojos un cuarto de hora.',
-    has(s, 'hand') && 'Buscas su mano. No la retira. Tampoco entrelaza los dedos: los deja contra los tuyos, quietos. Ninguno le pone nombre. Se quedan callados para no estropearlo.',
-    'Duermes a medias. A las dos, algo toca la madera. No es un puño. Es el ritmo de alguien que llama a una casa donde cree tener derecho a entrar.',
-    has(s, 'phone_on') && 'Tu celular vibra una vez contra el piso y se calla. Lo de afuera no llegó por casualidad. Vino a un punto exacto.',
-    has(s, 'she_has_name')
-      ? 'Dice tu nombre. Lo dice bien, como Andreína en un día bueno, y lo repite idéntico, sin respirar entre una vez y otra.'
-      : has(s, 'answered_marcelo')
-        ? 'Dice tu nombre con la cortesía de don Marcelo, un poco tarde, como si lo estuviera leyendo.'
-        : has(s, 'plans_return') || andreina(s) !== 'clear'
-          ? '—Juliet —dice. No es la voz de Juliet. Es la voz de las cuatro y diez, usando el nombre que Juliet dijo al contestar el teléfono.'
-          : '—¿Hay alguien? —Nadie responde. Entonces, más contenta—: ¿Hay alguien?',
-    'Juliet niega con la cabeza una sola vez.'
-  ),
-  choices: [
-    { id: 'callar', label: 'No contestar. Ni un crujido.', flags: ['silent_night'], next: 'amanecer' },
-    { id: 'quien', label: 'Preguntar quién es.', effects: { exposure: 1, signal: 1 }, flags: ['answered_night'], next: 'amanecer' },
-    { id: 'huir', label: 'Salir por detrás y dejar el farol encendido.', effects: { fatigue: 1 }, flags: ['fled_night'], next: 'amanecer' }
-  ]
-});
-
-N({ id: 'amanecer', place: 'Camino de tierra', when: 'Miércoles · amanecer',
-  // Si se llevaron el radio, al amanecer encuentran la transmisión de Andreína
-  onEnter: s => has(s, 'took_radio') && !has(s, 'heard_broadcast')
-    ? { flags: ['heard_broadcast'], clues: ['frecuencia'], effects: { signal: 1 } } : null,
-  body: s => w(
-    has(s, 'fled_night')
-      ? 'Salieron por detrás y el farol se quedó encendido, mintiendo. Nadie los alcanzó, o nadie quiso que lo vieran alcanzarlos.'
-      : has(s, 'answered_night')
-        ? 'La voz los siguió un tramo y se perdió donde el camino se abre. Moverse la despistó. También le enseñó que ustedes contestan.'
-        : 'Nadie los siguió hasta la cerca, o nadie quiso dejarse ver. El campo humea con un frío limpio.',
-    s.stats.provisions <= 0
-      ? 'No queda nada que repartir. El hambre es un ruido más, y Juliet no lo convierte en queja.'
-      : 'Comen lo que queda sin hacer de eso una ceremonia.',
-    has(s, 'took_radio') &&
-      'Juliet recorre el dial del radio buscando otra cosa que no sea la locutora oficial. Entre dos estáticas aparece una voz que conoces mejor que la tuya: Andreína. Transmite con el radio de un taxi desde el estacionamiento del edificio Costa, nivel 2. Está ronca y es ella. Dice: no contesten a los golpes, no digan su nombre, no se queden en cuartos cerrados. Dice el tuyo una vez —«{nombre}»— y se corrige, furiosa: «No. Nombres no». Después repite el eslogan oficial, una sola vez, y corta.',
-    feverish(s)
-      ? 'Juliet dice que queda poca agua. Tú lo repites. Ella se detiene. No es un eco del camino: es tu boca, un segundo tarde.'
-      : 'El mapa sigue teniendo tres ideas. Con sueño, todas parecen posibles.'
-  ),
-  choices: [
-    { id: 'fiebre', label: 'Decirle que estás repitiendo sus frases.', hidden: s => !feverish(s) || exhausted(s), next: 'fiebre' },
-    { id: 'orilla', label: 'Sentarse. El cuerpo ya decidió.', hidden: s => !exhausted(s), next: 'ending_orilla' },
-    { id: 'capital', label: 'Hacia la capital, mientras la gasolina alcance.',
-      hidden: s => feverish(s) || exhausted(s), enabled: s => s.stats.fuel >= 2, locked: 'La gasolina no alcanza.',
-      effects: { fuel: -1 }, next: 'capital_control' },
-    { id: 'puesto', label: 'Al puesto de salud que Juliet recuerda.',
-      hidden: s => feverish(s) || exhausted(s), enabled: s => s.stats.fuel >= 1, locked: 'La gasolina no alcanza.',
-      effects: { fuel: -1 }, next: 'clinica' },
-    { id: 'ciudad', label: 'Volver a Puerto Gris, por Andreína.',
-      hint: s => has(s, 'heard_broadcast') ? 'Todavía se corrige. Por ahora.' : null,
-      hidden: s => feverish(s) || exhausted(s), enabled: s => s.stats.fuel >= 2, locked: 'La gasolina no alcanza.',
-      effects: { fuel: -1, signal: 1 }, flags: ['heading_back'], next: 'regreso' },
-    { id: 'pie', label: 'Dejar la camioneta y seguir a pie.', hint: 'Sin gasolina no hay rumbo largo. Hay piernas.',
-      hidden: s => feverish(s) || exhausted(s) || s.stats.fuel >= 2,
-      effects: { fatigue: 2, fuel: -5 }, flags: ['on_foot'], next: 'camino_libre' }
-  ]
-});
-
-N({ id: 'fiebre', place: 'Camino', when: 'Miércoles',
-  body: s => w(
-    'No ves doble. Es peor: Juliet dice «nos queda agua» y la frase se te queda en la boca como un caramelo. La repites. Ella se detiene en medio del camino.',
-    '—Otra vez —te pide. Y se arrepiente, porque obedeces.',
-    'La puerta, los nombres, los golpes que contestaste: algo tuvo tiempo de aprenderte. Tienes fiebre. Si Juliet se queda hablándote, su voz puede ser la última que te quede clara. Y vas a caminar hacia ella aunque la tengas enfrente.',
-    s.stats.closeness >= 5
-      ? 'Te mira como en la cocina del 4B, cuando todavía podías elegir qué decir. Ahora es ella la que elige qué no va a decirte.'
-      : 'No hay romanticismo en su cara. Hay un cálculo de enfermera y, debajo, el susto de perder a alguien a quien ya se había acostumbrado.'
-  ),
-  choices: [
-    { id: 'escribir', label: 'Escribirle que se vaya. Sin voz. Sin tu nombre.', next: 'ending_sin_voz' },
-    { id: 'quedarte', label: 'Pedirle que siga a tu lado, aunque tenga que callarse.', next: 'ending_ultima_frase' }
-  ]
-});
-
-/* =========================================================
-   ACTO 3 · LAS SALIDAS
-   ========================================================= */
-
-const atParking = s => has(s, 'heard_broadcast');
-
-N({ id: 'capital_control', place: 'Control en la entrada de la capital', when: 'Miércoles',
-  enter: { clues: ['ortega'] },
-  body: s => w(
-    'No son científicos. Son cuatro soldados jóvenes, una mesa plegable y la capitana Ortega, una mujer flaca con la voz gastada de tanto dar órdenes. Detrás, un polideportivo con las puertas abiertas: gente sentada en el piso, consolándose, diciendo su nombre en voz alta para que el conteo cuadre.',
-    has(s, 'helped_mara') && 'Recuerdas lo que dijo Mara: allí están contando gente en voz alta.',
-    'Un soldado te pide las llaves para estacionar los vehículos. Juliet mira el polideportivo y después el mapa. A lo lejos, sobre una loma, hay una caseta con una antena. La mancha de café del mapa cae justo en ese tramo.'
-  ),
-  choices: [
-    { id: 'libreta', label: 'Entregarle a la capitana tu libreta de mantenimiento.',
-      hint: 'La hora, tu letra y la firma de Brown.',
-      hidden: s => !has(s, 'has_log'), flags: ['showed_log'], next: 'pabellon' },
-    { id: 'mensaje', label: 'Enseñarle el mensaje de Brown en tu celular.',
-      hint: 'El nombre de Brown asusta más que tu cara.',
-      hidden: s => !hasProof(s), flags: ['showed_brown'], next: 'relevo' },
-    { id: 'juliet', label: 'Dejar que Juliet hable como personal de salud.',
-      hint: 'Es un frente común. Si la contradices, se cae.',
-      enabled: s => s.stats.closeness >= 3 || has(s, 'cared'), locked: 'Todavía no son un equipo.',
-      flags: ['juliet_bluff'], next: 'relevo' },
-    { id: 'cuneta', label: 'Abandonar la camioneta y bajar por la cuneta.',
-      hint: 'En el polideportivo ya están diciendo nombres. No entren en esa conversación.',
-      effects: { fatigue: 1, fuel: -5 }, flags: ['ditched', 'on_foot'], next: 'relevo' }
-  ]
-});
-
-// Escena nueva: la libreta llega a manos de alguien con autoridad
-N({ id: 'pabellon', place: 'Puerta del polideportivo', when: 'Miércoles · mediodía',
-  body: s => has(s, 'log_truth')
-    ? [
-      'Ortega lee la libreta dos veces. «Metal caliente y almendra en el retorno, 3:42 p. m.». La firma de Brown al margen. Se le endurece la cara.',
-      '—Esto es del lunes —dice—. A mí me avisaron el martes en la noche. Y me mandaron a contar gente.',
-      'Mira el polideportivo. Allá adentro hay doscientas personas diciendo su nombre en voz alta, y por lo menos tres que se quedaron demasiado quietas, sentadas muy derechas, repitiendo lo que dice el que tienen al lado.',
-      '—Si les grito que se callen, me aprenden a mí —dice Ortega, sin bajar la mirada—. Usted sabe de esto más que yo. ¿Cómo los saco?'
-    ]
-    : [
-      'Ortega lee la libreta. «Filtro saturado». La firma de Brown al margen. Te la devuelve.',
-      '—Aquí dice que usted cambió un filtro. Con su letra.',
-      'Le explicas que no fue eso, que Brown te dictó la frase, que el olor era otro. Te escucha con la paciencia de quien ya ha oído a cien personas asustadas desde ayer.',
-      '—Tengo doscientas personas ahí adentro y una orden de contarlas. Un papel que dice «filtro» no me sirve para desobedecerla. —Señala la loma—. Si quiere ir a la antena, vaya. Yo no lo vi.'
-    ],
-  choices: [
-    { id: 'pizarra', label: 'Escribir la regla en grande y sacar a la gente en silencio, por grupos.',
-      hint: 'Sin una sola voz. Lleva horas.', hidden: s => !has(s, 'log_truth'), next: 'ending_registro' },
-    { id: 'gritar', label: 'Pararte en la puerta y decir la regla en voz alta, una sola vez.',
-      hint: 'Doscientas personas se callan. Tres se quedan con tu voz.',
-      hidden: s => !has(s, 'log_truth'), effects: { exposure: 2 }, next: 'ending_voz_pabellon' },
-    { id: 'dejar', label: 'Dejarle la libreta a Ortega y seguir hacia la antena.',
-      hint: 'Que la prueba la lleve alguien con uniforme.',
-      hidden: s => !has(s, 'log_truth'), flags: ['gave_log'], next: 'relevo' },
-    { id: 'irse', label: 'Guardar la libreta e irse hacia la antena.',
-      hidden: s => has(s, 'log_truth'), effects: { fatigue: 1 }, flags: ['log_refused'], next: 'relevo' }
-  ]
-});
-
-N({ id: 'relevo', place: 'Caseta de la antena', when: 'Miércoles · mediodía',
-  enter: { clues: ['replica'] },
-  body: s => w(
-    has(s, 'ditched')
-      ? 'Llegan llenos de lodo, sin camioneta. El camino de servicio estaba donde el café manchaba el mapa. La caseta huele a ozono y a alguien que se fue con prisa.'
-      : has(s, 'juliet_bluff')
-        ? 'Juliet habló del puesto de salud, de no mezclar a los sanos con el polideportivo, de un médico al otro lado de la antena. El cabo quiso retenerla. Ella no levantó la voz. Tú no la contradijiste. Los dejaron rodear el control.'
-        : has(s, 'gave_log')
-          ? 'Ortega se quedó con la libreta y les dio paso sin preguntar más. Detrás de ustedes, por primera vez desde ayer, el polideportivo hace silencio.'
-          : has(s, 'log_refused')
-            ? 'Subiste la loma con la libreta en el bolsillo y la palabra «filtro» pesándote más que la mochila.'
-            : 'El nombre de Brown le arruinó el día al cabo. No lo entendió. Entendió que no quería firmar nada con ese nombre. Les señaló la antena como quien señala el problema de otro.',
-    'Brown no está. Dejó una grabadora sobre una caja de fusibles, y la grabadora habla con voz de ensayo:',
-    '«Si oyes esto, lo del anexo no fue un filtro. Réplica salió por los ductos del anexo y llegó al edificio Costa y a otros dos. No es rabia. Es impronta. En un sitio cerrado, el afectado se queda con la última voz clara y camina hacia quien la dijo. Por eso les dije que se movieran: un refugio lleno de voces es una trampa. La libreta prueba la hora y mi firma. Si la llevas a la capital, el Comité la va a archivar contigo adentro. Entiérrala. O úsala, si todavía crees que un papel salva a alguien».',
-    'Escrito a lápiz sobre la caja: una lancha, kilómetro 40, un solo puesto, antes de que oscurezca.'
-  ),
-  choices: [
-    { id: 'quedar', label: 'Quedarte con la grabadora.', flags: ['kept_recorder'], next: 'un_asiento' },
-    { id: 'enterrar', label: 'Enterrarla, como él pide.', hint: 'Ya oíste el kilómetro. La prueba puede dormir.', flags: ['buried'], next: 'un_asiento' },
-    { id: 'romper', label: 'Romper la nota del kilómetro. Seguir los dos, sin Comité.', flags: ['refused_boat'], next: 'ending_movimiento' }
-  ]
-});
-
-N({ id: 'un_asiento', place: 'Kilómetro 40', when: 'Miércoles · antes de oscurecer',
-  body: s => w(
-    'El embarcadero es de cañas y de una mujer sin uniforme. Mira la grabadora, si la traes, o tus manos vacías si la enterraste. El puesto es real. Es uno solo.',
-    '—Antes de que oscurezca —dice—. Después yo también me voy.',
-    'Juliet no te toca. Es peor: espera, como en el 4B, a que decidas como si ella pudiera decirte que no.',
-    has(s, 'buried') && 'Todavía tienes la tierra de la caseta debajo de las uñas. Brown logró enterrar la prueba. No logró enterrar el kilómetro.'
-  ),
-  choices: [
-    { id: 'ella', label: 'Que suba Juliet. Tú te quedas con lo que sabes.', hint: 'Un puesto. Una persona.',
-      next: 'ending_plaza_vacia',
-      fork: s => s.stats.closeness >= 5 && !has(s, 'rushed') && !has(s, 'plans_return') ? 'ending_no_barco' : null },
-    { id: 'tu', label: 'Subes tú. Le pides que te espere en la orilla.',
-      hint: '«Espérame» es una promesa con hora. Los dos lo saben.', next: 'ending_un_solo_asiento' },
-    { id: 'nombre', label: 'Nadie sube. Dejas el nombre de Andreína y la hora de la llamada.',
-      flags: ['gave_name'], next: 'ending_nombre' },
-    { id: 'nadie', label: 'Nadie sube. Rompes la nota y siguen.', flags: ['refused_boat'], next: 'ending_movimiento' }
-  ]
-});
-
-N({ id: 'clinica', place: 'Puesto de salud', when: 'Miércoles · mañana',
-  body: () => [
-    'El puesto es una casa verde de techo de zinc, despintada. Rita, la enfermera, abre con las manos en alto para que vean que no trae nada. Está lúcida. Cansada de estarlo.',
-    'En la sala del fondo hay dos pacientes sentados muy derechos. Repiten el eslogan de la radio —«permanezcan en sus domicilios»— porque Rita se lo ha estado diciendo para calmarlos. Cada vez que ella contesta, les da una voz más clara que la anterior.',
-    'Juliet lo ve enseguida. Rita no. Rita cree que dejar de hablarle a un paciente es abandonarlo.'
-  ],
-  choices: [
-    { id: 'advertir', label: 'Decirle a Rita que no les conteste más, e irse antes de una hora.',
-      effects: { closeness: 1 }, flags: ['warned_rita', 'left_clinic'], clues: ['rita'], next: 'salida_rita' },
-    { id: 'noche', label: 'Quedarse esta noche. Hay camas y agua.',
-      hint: 'Descansar en una casa que ya está aprendiendo frases.',
-      effects: { provisions: 1, exposure: 1, fatigue: -2 }, flags: ['left_clinic'], next: 'clinica_noche' },
-    { id: 'juliet_habla', label: 'Dejar que Juliet los examine. Es lo suyo.', hint: 'Va a tener que hablarles.',
-      effects: { closeness: -1 }, flags: ['juliet_imprint', 'left_clinic'], next: 'camino_libre' },
-    { id: 'robar', label: 'Vaciar el armario de medicinas y salir.',
-      effects: { provisions: 2, closeness: -2 }, flags: ['stole', 'left_clinic'], next: 'camino_libre' }
-  ]
-});
-
-N({ id: 'clinica_noche', place: 'Puesto de salud', when: 'Miércoles · noche',
-  body: () => [
-    'Las camas son de verdad. El agua también. De madrugada, Rita, por costumbre, le dice a un paciente que todo va a salir bien. Él se lo agradece con las mismas palabras. Después se levanta, camina hasta la puerta del cuarto donde duerme Juliet y espera, educado, a que alguien le conteste.'
-  ],
-  choices: [
-    { id: 'ventana', label: 'Sacar a Juliet por la ventana. Ni una palabra.',
-      effects: { fatigue: 1 }, flags: ['fled_clinic'], next: 'camino_libre' },
-    { id: 'calla', label: 'Decirle a Rita, desde el pasillo, que se calle.',
-      hint: 'Tu voz entra en la casa. La casa toma nota.',
-      effects: { exposure: 1 }, flags: ['shouted_clinic'], next: 'camino_libre',
-      fork: s => s.stats.exposure >= 3 ? 'fiebre' : null },
-    { id: 'contestar', label: 'Contestarle tú, para que no le conteste Juliet.',
-      hint: 'El paciente va a aprender tu voz, no la de ella.',
-      effects: { exposure: 1 }, flags: ['you_answered_clinic'], next: 'ending_casa_quieta' }
-  ]
-});
-
-N({ id: 'salida_rita', place: 'Camino del puesto', when: 'Miércoles',
-  enter: { flags: ['heard_broadcast'], clues: ['frecuencia'] },
-  body: s => w(
-    has(s, 'took_radio')
-      ? 'Rita les confirma lo que ya oyeron en el radio: la voz del estacionamiento del Costa sigue saliendo cada hora.'
-      : 'Rita les presta su radio de pilas y les da una frecuencia, como quien da una llave que no se atreve a usar. La aguja encuentra una voz que conoces mejor que la tuya.',
-    'Andreína. Transmite con el radio de un taxi desde el estacionamiento del edificio Costa, nivel 2. Está ronca y es ella. Dice: no contesten a los golpes, no digan su nombre, no se queden en cuartos cerrados. Dice el tuyo una vez —«{nombre}»— y se corrige, furiosa: «No. Nombres no».',
-    'Se le corta la respiración, repite el eslogan oficial una sola vez y se calla. Vuelve a hablar, otra vez como ella. Le quedan horas, no días.',
-    'Juliet baja el volumen. —Si vamos, vamos sin hablarle dentro de un sitio cerrado. Si no vamos, tienes que oírla hasta el final. No a medias.'
-  ),
-  choices: [
-    { id: 'camion', label: 'Ir al estacionamiento en la camioneta.', hidden: s => !canDrive(s),
-      effects: { fuel: -1, signal: 1 }, flags: ['heading_back'], next: 'regreso' },
-    { id: 'pie', label: 'Ir a pie. Duele, y es hacia ella.', hidden: canDrive,
-      effects: { fatigue: 2, signal: 1 }, flags: ['on_foot', 'heading_back'], next: 'regreso' },
-    { id: 'oir', label: 'Quedarse a oírla hasta que la voz deje de ser suya.', next: 'ending_frecuencia' },
-    { id: 'apagar', label: 'Apagar el radio mientras todavía es ella. Seguir.', flags: ['radio_off'], next: 'ending_movimiento' }
-  ]
-});
-
-N({ id: 'camino_libre', place: 'Campo abierto', when: 'Miércoles',
-  body: s => w(
-    has(s, 'stole')
-      ? 'Las medicinas de Rita van en la mochila y Juliet no te dirige la palabra desde la cerca. Camina a tu lado porque el camino es uno solo, no porque el silencio sea paz.'
-      : has(s, 'juliet_imprint')
-        ? 'Juliet les habló como se habla en una consulta: claro, cerca, sin prisa. Uno de los pacientes repitió su nombre antes de que llegaran a la puerta. Ella cerró la boca y no la ha vuelto a abrir. Detrás, a lo lejos, una figura camina hacia ustedes.'
-        : has(s, 'fled_clinic')
-          ? 'La ventana los dejó en el huerto. Rita sigue adentro, tal vez callada, tal vez no. No se voltean a comprobarlo.'
-          : has(s, 'on_foot')
-            ? 'La camioneta se quedó atrás, con el tanque vacío y las puertas abiertas para que nadie la confunda con un cuarto.'
-            : 'El campo no tiene Comité ni ciudad. Tiene demasiada luz y muy pocas decisiones.',
-    has(s, 'shouted_clinic') && 'En el pasillo dijiste «cállese» y la casa lo guardó. Si algo sale por esa puerta, va a salir con tu acento.',
-    'Juliet se detiene donde el camino se divide: hacia ninguna parte, hacia la capital y hacia el humo fino de Puerto Gris.'
-  ),
-  choices: [
-    { id: 'seguir', label: 'Seguir. Sin Comité y sin ciudad.', flags: ['refused_boat'], next: 'ending_movimiento' },
-    { id: 'andreina', label: 'Volver por Andreína.', effects: { signal: 1, fatigue: 1 },
-      effectsOf: s => ({ fuel: has(s, 'on_foot') || s.stats.fuel < 1 ? 0 : -1 }),
-      flags: ['heading_back'], next: 'regreso' },
-    { id: 'capital', label: 'Probar suerte en la capital, si la camioneta todavía arranca.',
-      hidden: s => has(s, 'on_foot') || s.stats.fuel < 2, effects: { fuel: -1 }, next: 'capital_control' }
-  ]
-});
-
-N({ id: 'regreso', place: s => atParking(s) ? 'Edificio Costa · estacionamiento, nivel 2' : 'Edificio Costa · 3A', when: 'Miércoles · tarde',
-  body: s => {
-    const st = andreina(s);
-    const park = atParking(s);
-    return w(
-      'De vuelta hacia el centro no hay controles. Hay silencio. El edificio Costa sigue en pie, y su escalera huele a la misma almendra, más seca.',
-      park && 'En el nivel 2 del estacionamiento hay un taxi con las ventanas subidas y el motor encendido. Adentro, Andreína, con el micrófono del radio en la mano. Un carro cerrado también es un cuarto.',
-      park && has(s, 'heard_broadcast') && 'Hace unas horas esa voz se corregía sola en el radio. Aquí nada garantiza que siga haciéndolo.',
-      st === 'imprinted'
-        ? (park
-          ? 'Por el vidrio la oyes repetir el eslogan y, debajo, tu nombre, masticado. No pregunta. Repite. Juliet se queda junto a la rampa, donde corre el aire.'
-          : 'Detrás de tu puerta, el eslogan y, debajo, tu nombre, masticado. No pregunta. Repite. Juliet se queda en el descanso, donde corre el aire. El pasillo es un tubo. El apartamento es un cuarto cerrado.')
-        : st === 'fraying'
-          ? `Andreína habla desde ${park ? 'el taxi' : 'adentro'}, y a ratos es ella: furiosa, concreta, en voz baja. A ratos te devuelve tu última frase con una cortesía que no es suya. —No entres. Si entras, te me quedas en la boca.`
-          : has(s, 'note_for_her')
-            ? `Tu papel de ayer ${park ? 'está pegado por dentro del vidrio del taxi' : 'asoma menos de lo que lo dejaste: ella lo recogió'}. La voz que llega es ronca y suya. —Lo leí. No hables aquí. Si tengo que salir, salgo hacia la rampa, no hacia ustedes.`
-            : 'Andreína está lúcida, febril y malhumorada, que es su manera de estar lúcida. —No entres, {nombre}. Si entras, te me quedas en la boca. Di una frase y apártate.',
-      'Si hablan los dos en ese aire, están eligiendo cuál va a ser la última voz.'
-    );
-  },
-  choices: [
-    { id: 'guiar', label: 'Una frase tuya, desde lejos: «Camina». Juliet no habla.',
-      hidden: s => andreina(s) === 'imprinted', next: 'ending_tres',
-      fork: s => s.stats.closeness <= 2 ? 'ending_retrovisor' : null },
-    { id: 'juliet', label: 'Que hable Juliet. Andreína la llamó a ella.', hint: 'Una instrucción. Después, silencio.',
-      hidden: s => andreina(s) === 'imprinted', next: 'ending_la_que_responde' },
-    { id: 'nota', label: 'Dejarle agua, la regla por escrito y ningún sonido. Aunque duela.',
-      flags: ['second_note'], next: 'ending_nota' },
-    { id: 'hablar_igual', label: 'Hablarle aunque ya no sea del todo ella.',
-      hidden: s => andreina(s) !== 'imprinted', effects: { exposure: 1 }, next: 'ending_ya_llegue' }
-  ]
-});
-
-/* =========================================================
-   FINALES
-   ========================================================= */
-
-const E = (id, title, epitaph, place, when, body) =>
-  N({ id, place, when, ending: { title, epitaph }, body });
-
-E('ending_orilla', 'La orilla', 'El cuerpo decidió antes que ustedes.', 'Epílogo', 'Donde se detuvieron', () => [
-  'Paran porque el cuerpo se detiene. La camioneta, si todavía existe, hace ese tic del metal cuando se enfría.',
-  'Juliet dice tu nombre. Casi le contestas con el suyo, que sería el error, pero el cansancio te corta la frase a la mitad. Ella lo entiende. Te deja el agua al alcance y se aparta un paso, no por miedo a ti: por miedo a convertirse en la última voz clara de esta orilla.',
-  'Un golpe, lejos. Luego, menos lejos. Paciente, educado, contento de haber encontrado a alguien que ya no camina. El movimiento era la vida. Se quedaron sin él.'
-]);
-
-E('ending_sin_voz', 'Sin voz', 'La alejaste con un papel, no con un nombre.', 'Epílogo', 'El camino', s => w(
-  'Escribes en el margen del mapa: «No digas mi nombre. No te quedes. Si te hablo, no me contestes». Juliet lo lee dos veces. No te lo discute en voz alta, porque ya entendió la regla mejor que Brown.',
-  'Deja el agua donde puedas alcanzarla sin que su mano pase demasiado tiempo en tu mismo aire. Camina. Una vez, desde lejos, levanta la mano. No le devuelves el gesto con la boca. Se lo devuelves con la mano. Es el último movimiento que todavía es tuyo.',
-  s.stats.closeness >= 4
-    ? 'No se voltea el tiempo suficiente para que el camino se vuelva un cuarto. Viniendo de Juliet, eso es una declaración.'
-    : 'No es una despedida de película. Es un procedimiento. Duele igual.'
-));
-
-E('ending_ultima_frase', 'La última frase', 'Se quedó, y cambiaba de tema cada vez que la repetías.', 'Epílogo', 'El camino', s => w(
-  s.stats.closeness >= 4
-    ? 'Juliet se queda. No porque se lo pidieras bien: ya lo había decidido antes de que la fiebre empezara a copiarte. Caminan. Te habla de alambradas, de un perro que no está, del anuncio de fertilizante. Cosas sin peso. Si empiezas a repetir lo del perro, cambia de tema.'
-    : 'Juliet se queda porque dejar a una persona sola en un camino no es algo que sepa hacer. Te lo dice así, sin adornos. Caminan. Habla poco y de cosas concretas, y cuando la repites cambia la frase como quien cambia una gasa.',
-  'No va a funcionar para siempre. Funciona esta mañana. La última voz clara que te queda no es un adiós: es una lista del mundo, dicha por alguien que decidió gastarla en ti.',
-  has(s, 'rushed')
-    ? 'Nunca vuelve sobre lo que le dijiste en el 4B. Si el amor cabe en esto, cabe en no aprovecharse de una boca que ya no obedece.'
-    : 'No te besa. Un beso sería un cuarto diminuto entre dos caras, y no piensa dejarte otra voz encima de la que ya tienes.'
-));
-
-E('ending_movimiento', 'Movimiento es vida', 'Siguen. Su nombre lo piensas, que es donde no se oye.', 'Epílogo', 'En marcha', s => w(
-  has(s, 'on_foot')
-    ? 'No hay camioneta. Hay una orilla de carretera que no se acaba y un acuerdo: no parar donde haya paredes. El cuerpo protesta. Lo escuchan sin obedecerle del todo.'
-    : 'La camioneta aguanta otro tramo. Llevan las ventanas abajo, aunque haga frío, para que la cabina no se vuelva un cuarto.',
-  has(s, 'radio_off') && 'Apagaste a Andreína mientras todavía se corregía. Eso va sentado entre los dos, ocupando más espacio que la mochila. No lo llamas una decisión por amor. Juliet tampoco. Solo dice: «El próximo tramo manejo yo». Es más íntimo que tomarte la mano.',
-  has(s, 'refused_boat') && !has(s, 'radio_off') && 'El Comité se queda sin la prueba y sin ustedes. Brown quería una de las dos cosas. No le dieron ninguna.',
-  s.stats.closeness >= 5
-    ? 'Juliet te dice: —Si algún día empiezo a repetirte las frases, no me corrijas. Detente y escríbeme. —Asientes. Más tarde se duerme con la frente contra el vidrio, o contra tu hombro si van a pie. No dices su nombre, ni siquiera con cariño. Los nombres son asas. Réplica no oye lo que piensas.'
-    : 'No son una pareja. Son un método que se está acostumbrando a otra persona. Juliet dicta las reglas con voz práctica: frases cortas, nada de nombres si el aire está quieto, turnos para no dormirse al mismo tiempo. Si llega la ternura, va a tener que disfrazarse de procedimiento.',
-  has(s, 'rushed') && 'Lo que le dijiste en el 4B viaja con ustedes como un tercer pasajero. Ella no lo baja de la camioneta. Tampoco le hace espacio.',
-  has(s, 'juliet_imprint') && 'A veces, muy atrás, alguien camina con el nombre de Juliet en la boca. Mientras ustedes se muevan, no acorta la distancia. Así que se mueven.'
-));
-
-E('ending_plaza_vacia', 'El puesto vacío', 'Ella vive. Tú te quedas de testigo, que no es lo mismo que quedarte de bueno.', 'Epílogo', 'Kilómetro 40', () => [
-  'Juliet sube porque se lo pediste como un hombre práctico, y ella es una mujer práctica. Desde la lancha no te dice adiós. Despedirse es pariente pobre de decir un nombre.',
-  'Te quedas en el kilómetro 40 con lo que sabes: la grabadora, o el recuerdo de haberla enterrado. Al oscurecer echas a andar, no hacia la ciudad sino hacia cualquier lado que no sea un cuarto.',
-  'Si Réplica quiere una voz, va a tener que aprender la de un hombre que ya no le habla a nadie. El nombre de Juliet no lo dices. Lo gastas por dentro, despacio, para que te dure.'
-]);
-
-E('ending_no_barco', 'Donde no quepas', 'Rechazó el puesto que no te incluía.', 'Epílogo', 'Kilómetro 40', s => w(
-  '—No me subas a un sitio donde tú no quepas —dice Juliet.',
-  'No es un discurso. Es la misma voz con que te pidió que decidieras como si ella pudiera decirte que no. Esta vez dice que no. La mujer del embarcadero no insiste. Ella también tiene que irse.',
-  has(s, 'hand')
-    ? 'Juliet te toma de la manga, no de la mano, para que la piel no se quede. Echan a andar por la orilla, lejos del agua.'
-    : 'Camina a tu lado, ni delante ni como quien va escoltada. El agua se queda sin ustedes.',
-  'No hay beso en el kilómetro 40. Hay un rechazo que los deja del mismo lado del mapa. Brown diría que es un error: dos personas juntas se encuentran más fácil. Tú, por esta noche, lo llamas compañía. No se lo dices en voz alta.'
-));
-
-E('ending_un_solo_asiento', 'Un solo puesto', 'Le pediste que te esperara. Los dos oyeron que era mentira.', 'Epílogo', 'Kilómetro 40', s => w(
-  'Subes. Le pides que te espere, que es una mentira con hora. La mujer no te pide explicaciones. El motor tampoco.',
-  s.stats.closeness >= 5
-    ? 'Juliet dice tu nombre una vez, clara y enojada, para que tengas que llevártelo. No corre detrás de la lancha. Quedarse quieta en la orilla también es una manera de no darte otra frase para repetir.'
-    : has(s, 'rushed')
-      ? '—Ya me lo dijiste en el 4B —dice, y se da la vuelta antes de que el motor tape el resto. No hay resto. Lo entendiste entonces y te hiciste el que no.'
-      : 'Juliet asiente, que en ella puede ser acuerdo o inventario. Se aparta de la orilla para no ser la figura que miras mientras te salvas. El gesto te humilla más que un insulto.',
-  'El Comité, o lo que queda de él, gana un pasajero. Tú pierdes a la única persona que te habría escrito en el margen de un mapa en vez de llamarte por tu nombre.'
-));
-
-E('ending_nombre', 'El nombre en la mesa', 'El puesto quedó para Andreína. Nunca sabrán si lo usó.', 'Epílogo', 'Tierra adentro', s => w(
-  'Le das a la mujer el nombre de Andreína, la hora de la llamada y, si lo sabes, el nivel del estacionamiento. No le das tu voz al agua. Es superstición y es ruego.',
-  has(s, 'heard_broadcast')
-    ? 'Le dices que Andreína todavía se corrige cuando se le escapa un nombre. La mujer anota «se corrige» como si fuera un síntoma útil. Puede que lo sea.'
-    : 'La mujer anota el nombre sin prometer nada. Las promesas son frases, y esta tarde a todo el mundo le faltan frases.',
-  'Juliet y tú se van tierra adentro. No van a saber si alguien usó ese puesto. No saber es la forma que todavía tiene tu cuidado por Andreína: no entrar en su cuarto, no tapar su voz con la tuya, dejarle una salida que no pase por tu boca.',
-  s.stats.closeness >= 4
-    ? 'En el tramo siguiente, Juliet maneja, o marca el paso. No te absuelve. Tampoco te deja solo con la duda, que sería más fácil y más cruel.'
-    : 'El viaje que les queda es eficiente y silencioso. Sobrevivir no los volvió íntimos. Los volvió precisos.'
-));
-
-E('ending_frecuencia', 'La frecuencia', 'La oíste hasta el final. Juliet eligió cuál sería la última voz.', 'Epílogo', 'Junto al radio', s => w(
-  'Andreína repite el eslogan tres veces y no se corrige. A la cuarta, Juliet apaga el radio. El clic es pequeño y se lleva por delante una redacción, una investigación y la versión de tu vida en la que llegabas a tiempo.',
-  'Nadie habla durante un largo rato. El campo sigue ahí, insoportablemente normal.',
-  s.stats.closeness >= 4
-    ? 'Entonces Juliet dice tu nombre. Una vez, claro, mirándote. Para que, si el aire de la camioneta ya es un cuarto, la última voz que los dos oyeron sea una que eligieron. No es un beso. Te desarma igual.'
-    : 'Juliet no te ofrece tu nombre. Arranca, o echa a andar, y deja el radio apagado boca abajo, como se deja un cuchillo. El duelo es real. La confianza, todavía no. Quedan muchos kilómetros para no confundir una cosa con la otra.'
-));
-
-E('ending_casa_quieta', 'Todo va a salir bien', 'Contestaste tú para que no la aprendiera a ella.', 'Epílogo', 'La carretera contraria', () => [
-  'Contestaste tú. El paciente aprende tu manera de hablar con un agradecimiento espantoso y te sigue hasta el huerto, educado, sin prisa, repitiendo que todo va a salir bien con una boca que ya no es la de Rita.',
-  'Le escribes a Juliet, en el reverso de una receta, que se lleve la camioneta lejos del puesto. Te obedece porque entiende lo que estás haciendo, y porque discutirlo en voz alta los mataría a los dos. Se va.',
-  'Tú caminas en dirección contraria. Detrás, la misma promesa, con tu voz. No te detienes: detenerte sería dejarlo terminar la lección. Esta noche, quererla es eso: que te siga a ti y no a ella.'
-]);
-
-E('ending_tres', 'Ventanas abiertas', 'Tres personas en una camioneta que no puede ser un cuarto.', 'Epílogo', 'Carretera, ventanas abajo', s => w(
-  andreina(s) === 'fraying'
-    ? `Andreína sale ${atParking(s) ? 'del taxi' : 'del apartamento'}. A mitad de camino repite una frase tuya y luego se insulta, con su voz de verdad, y te prohíbe contestarle cuando eso pase. Ustedes van detrás y delante, nadie en el mismo sitio el tiempo suficiente.`
-    : 'Andreína sale por su propio pie, furiosa, lúcida, ardiendo de fiebre. —No hablen. No me toquen. Manejen. —Es la persona más inteligente del edificio y lo demuestra no pidiendo un abrazo.',
-  'Tres personas en una camioneta son un cuarto que se mueve. La regla nace sola: ventanas abiertas, frases de tres palabras, ningún nombre. El aire frío es parte del tratamiento.',
-  s.stats.closeness >= 5
-    ? 'Juliet acepta la regla sin convertirte ni en villano ni en el elegido. Cuando Andreína se duerme —se duerme de verdad— Juliet te mira y niega con la cabeza, apenas, por si se te ocurría hablar para llenar el alivio. Querer decir algo y guardarte el aire, porque el aire es un arma: eso es lo que hay entre ustedes, por ahora.'
-    : 'Juliet acepta porque el procedimiento es bueno, no porque te haya perdonado el triángulo. Maneja un tramo. Andreína no pregunta qué son ustedes dos. Todavía está ocupada en seguir siendo ella.',
-  'Nadie gana. Los tres siguen siendo personas, que esta semana es un final enorme de lo pequeño que es.'
-));
-
-E('ending_retrovisor', 'El retrovisor', 'Juliet te dio las llaves y se quedó.', 'Epílogo', 'Puerto Gris, de salida', s => w(
-  `Andreína sale ${atParking(s) ? 'del taxi' : 'al pasillo'} porque se lo pediste en una frase corta y te apartaste. Está enferma y es ella. Juliet mira la escena —tú, Andreína, la mujer con la que todavía compartes un contrato de alquiler— y no se sube.`,
-  'Te pone las llaves en la mano. —Yo sé quedarme sin contestar. Ustedes dos, todavía no. —No es del todo justo. Es lo bastante cierto como para que no le discutas.',
-  'En el retrovisor, Juliet se va haciendo pequeña sin terminar de darse vuelta. Andreína todavía no pregunta quién era. La camioneta lleva las ventanas abajo y una conversación que no se pueden permitir. Atrás se queda la única persona que leyó tu nota y aun así te abrió la puerta.'
-));
-
-E('ending_la_que_responde', 'Por escrito', 'Juliet habló una vez. Después, solo papel.', 'Epílogo', 'La camioneta', s => w(
-  `Juliet no se acerca. Desde ${atParking(s) ? 'la rampa' : 'la escalera'}, una sola instrucción: —Andreína, camina hacia mi voz y no hables. —Funciona demasiado bien.`,
-  'En la camioneta, Andreína mira la boca de Juliet como quien mira una brújula. Juliet deja de usarla. Escribe. Te pasa un papel: «sigo aquí. no me pidas que diga tu nombre».',
-  has(s, 'rushed')
-    ? 'Otro papel, minutos después, más seco: «este no es el momento». Lo del 4B viaja con ustedes, por fin en el formato que se merecía.'
-    : 'No escribe «te quiero». Sería una frase preciosa y, en este aire, una orden. La letra basta. La lees dos veces y guardas el papel donde no se te caiga cerca de Andreína, que ya tiene una voz que seguir y no necesita la tuya.',
-  'Andreína, lúcida a ratos, obedece el silencio como si fuera un tratamiento. Los tres son un hechizo mal cerrado: una mujer que hace de brújula, otra que la sigue, y tú, aprendiendo a querer en presente sin decirlo.'
-));
-
-E('ending_nota', 'La segunda nota', 'Empezaste con un papel. Terminas con otro.', 'Epílogo', s => atParking(s) ? 'El estacionamiento' : 'La escalera', s => w(
-  atParking(s)
-    ? 'Dejan agua, antitérmico y la regla escrita sobre el capó del taxi. No tocan el vidrio. Tocar sería pedir una respuesta, y ya saben en qué se convierte una respuesta.'
-    : 'Deslizan agua, antitérmico y la regla escrita por debajo de la puerta. No tocan. Tocar sería pedir una respuesta, y ya saben en qué se convierte una respuesta.',
-  andreina(s) === 'imprinted'
-    ? 'Del otro lado no llega un «está bien». Llega el eslogan, cariñoso, dirigido a nadie y a ti. Tal vez lea el papel. Tal vez no. Se van mientras todavía pueden distinguir sus pasos de los de ella.'
-    : has(s, 'note_for_her')
-      ? 'La segunda nota encuentra a la primera. Oyes el papel y, después, una sola palabra con la voz de Andreína, no con la tuya: «Bueno». Se van mientras esa palabra todavía es suya.'
-      : 'Oyes el papel moverse. Luego, bajito y real: «¿{nombre}?». No contestas. Es lo más cerca que estuviste de salvarla y de perderte. Juliet te toca el codo y se van.',
-  s.stats.closeness >= 4
-    ? 'Juliet iguala tu paso para que la bajada no suene a una persona abandonando a otra. No te consuela. El consuelo sería una voz de más.'
-    : 'Se van eficientes, avergonzados, vivos. La ciudad les debe un edificio, y ustedes le deben un silencio.'
-));
-
-E('ending_ya_llegue', 'Detrás de la camioneta', 'Hablaste en el cuarto equivocado. Ahora ella te sigue.', 'Epílogo', 'Detrás de la marcha', () => [
-  'Hablas. El cuarto te cobra. Andreína sale repitiendo lo último que dijiste, con una sonrisa que no es suya, y camina hacia tu boca como hacia una puerta que por fin tiene sentido.',
-  'No la dejas subir a la cabina. Juliet maneja a paso de hombre, ventanas arriba, radio apagado. Tú vas delante, a pie, y Andreína detrás de ti, no de ella. Es un arreglo monstruoso y, por ahora, funciona.',
-  'No sabes cuánto tiempo puede una persona hacer de faro. Sabes que si te detienes, el camino se vuelve un cuarto largo. Así que sigues. Juliet te mira por el retrovisor y no dice tu nombre. Tú no dices el de Andreína. Entre los tres, lo único que habla es el motor, y el motor no tiene voz que imitar.'
-]);
-
-/* ---------- Finales nuevos (rama de la libreta) ---------- */
-
-E('ending_registro', 'El registro', 'Tu letra dijo la verdad el lunes. El miércoles sacó a doscientas personas.', 'Epílogo', 'Polideportivo', s => w(
-  'Escribes la regla con marcador en el reverso de un cartel de vacunación: «No hablen. No digan su nombre. Salgan en silencio por la puerta de atrás. Si alguien les repite, no contesten». Ortega la lee y asiente.',
-  'Tardan cuatro horas. Grupo por grupo, cartel en alto, sin una sola voz. Los soldados aprenden a señalar. Juliet aparta a los tres que se quedaron demasiado quietos y los deja en la cancha vacía, con la puerta abierta y nadie que les hable. Cuando sale el último grupo, el polideportivo suena por fin a lo que es: un edificio vacío.',
-  'A ustedes no los dejan irse. Ortega se queda con la libreta y les asigna una carpa y un soldado en la puerta: son testigos. Brown tendrá que explicar por qué firmó la verdad el lunes y mandó a contar gente el martes.',
-  s.stats.signal >= 4
-    ? 'Esa noche le das a Ortega el nombre de Andreína y el lugar donde la oíste por última vez. Ella lo anota sin prometer nada. Es más de lo que habrías conseguido gritando.'
-    : 'Esa noche no duermes. Piensas en Andreína, que llevaba semanas detrás de esta historia, y en que la prueba la tenías tú.',
-  s.stats.closeness >= 4
-    ? 'Juliet se sienta en tu catre sin pedir permiso. No dice nada. Ya no hace falta decir nada para estar cerca.'
-    : 'Juliet duerme en el catre de al lado, de espaldas. Hicieron algo bueno juntos. Todavía no saben qué son.'
-));
-
-E('ending_voz_pabellon', 'La voz del polideportivo', 'Dijiste la regla en voz alta. Doscientas personas te obedecieron. Tres te aprendieron.', 'Epílogo', 'Polideportivo', s => w(
-  'Te paras en la puerta y dices la regla una sola vez, clara, con la voz con que les explicas una avería a los vecinos: «No hablen. No digan su nombre. Salgan en silencio». El polideportivo se calla de golpe. Doscientas personas te obedecen.',
-  'Tres se levantan. Los que estaban demasiado quietos caminan hacia ti repitiendo «no hablen» con tu entonación exacta, empujando con suavidad entre la gente que se aparta.',
-  'No esperas. Les das la espalda y sales al campo, despacio, para que te sigan a ti y no a los demás. Detrás de ti, tres voces iguales a la tuya. Delante, ninguna.',
-  s.stats.closeness >= 4
-    ? 'Lo último que ves del polideportivo es a Juliet, en la puerta, levantando un cartel para organizar la salida. No te llama. Ese silencio es lo más valiente que alguien ha hecho por ti.'
-    : 'Juliet se queda organizando la salida con Ortega. No te llama. Es lo correcto, y los dos lo saben.'
-));
-
-/* =========================================================
-   MOTOR — funciones puras (sin DOM). Se pueden probar en Node.
-   ========================================================= */
-
-const val = (x, s) => typeof x === 'function' ? x(s) : x;
-const clampStats = st => {
-  const out = { ...st };
-  for (const k of Object.keys(STORY.maxStats)) {
-    const n = Number.isFinite(out[k]) ? out[k] : 0;
-    out[k] = Math.max(0, Math.min(STORY.maxStats[k], n));
-  }
-  return out;
-};
-const node = id => STORY.nodes[id];
-
-// Nombre del protagonista: se escribe al iniciar y reemplaza {nombre} en el texto
-const DEFAULT_NAME = 'León';
-function cleanName(x) {
-  const n = String(x || '').replace(/[\u0000-\u001f<>{}]/g, '').replace(/\s+/g, ' ').trim().slice(0, 24);
-  return n ? n.charAt(0).toLocaleUpperCase('es') + n.slice(1) : DEFAULT_NAME;
-}
-const nameOf = s => (s && s.name) || DEFAULT_NAME;
-const sub = (t, s) => typeof t === 'string' ? t.replace(/\{nombre\}/g, nameOf(s)) : t;
-
-function newGame(name) {
-  return { name: cleanName(name), nodeId: STORY.start, stats: { ...STORY.initialStats }, flags: [], clues: [], fresh: [], history: [] };
-}
-
-function applyChange(s, ch) {
-  if (!ch) return s;
-  let st = { ...s.stats };
-  for (const [k, v] of Object.entries(ch.effects || {})) if (typeof v === 'number') st[k] = (st[k] || 0) + v;
-  const flags = [...s.flags];
-  for (const f of ch.flags || []) if (!flags.includes(f)) flags.push(f);
-  const clues = [...s.clues], fresh = [...s.fresh];
-  for (const c of ch.clues || []) if (STORY.codex[c] && !clues.includes(c)) { clues.push(c); fresh.push(c); }
-  return { ...s, stats: clampStats(st), flags, clues, fresh };
-}
-
-function enterNode(s, id) {
-  const n = node(id);
-  if (!n) return s;
-  let r = { ...s, nodeId: id, fresh: [] };
-  r = applyChange(r, val(n.enter, r));
-  if (n.onEnter) r = applyChange(r, n.onEnter(r));
-  return r;
-}
-
-function paragraphs(s) {
-  const n = node(s.nodeId);
-  if (!n) return ['La partida apunta a una escena que ya no existe.'];
-  const p = n.body(s).map(x => sub(x, s));
-  return p.length ? p : ['…'];
-}
-
-function choicesFor(s) {
-  const n = node(s.nodeId);
-  if (!n || !n.choices) return [];
-  return n.choices.filter(c => !(c.hidden && c.hidden(s))).map(c => {
-    const enabled = !c.enabled || c.enabled(s);
-    return { choice: c, label: sub(c.label, s), enabled, reason: sub(enabled ? val(c.hint, s) : (c.locked || val(c.hint, s)), s) };
-  });
-}
-
-function choose(s, choiceId) {
-  const n = node(s.nodeId);
-  const c = n && n.choices && n.choices.find(x => x.id === choiceId);
-  if (!c || (c.hidden && c.hidden(s)) || (c.enabled && !c.enabled(s))) return s;
-  let r = applyChange(s, { effects: { ...(c.effects || {}), ...(c.effectsOf ? c.effectsOf(s) : {}) }, flags: c.flags });
-  const target = (c.fork && c.fork(r)) || c.next;
-  const history = [...s.history, { place: val(n.place, s), label: sub(c.label, s) }].slice(-120);
-  r = enterNode({ ...r, history }, target);
-  return applyChange(r, { clues: c.clues });
-}
-
-function allEndings() {
-  return Object.values(STORY.nodes).filter(n => n.ending).map(n => ({ id: n.id, ...n.ending }));
-}
-
-function validSave(x) {
-  return x && typeof x === 'object' && typeof x.nodeId === 'string' && !!node(x.nodeId) &&
-    x.stats && typeof x.stats === 'object' && Array.isArray(x.flags) && Array.isArray(x.clues);
-}
-
-function restore(x) {
-  if (!validSave(x)) return null;
-  const base = newGame();
-  const stats = { ...base.stats };
-  for (const k of Object.keys(stats)) if (Number.isFinite(x.stats[k])) stats[k] = x.stats[k];
-  return {
-    name: cleanName(x.name), nodeId: x.nodeId, stats: clampStats(stats),
-    flags: x.flags.filter(f => typeof f === 'string'),
-    clues: x.clues.filter(c => typeof c === 'string' && STORY.codex[c]),
-    fresh: [],
-    history: Array.isArray(x.history) ? x.history.filter(h => h && typeof h.label === 'string').slice(-120) : []
-  };
-}
-
-// Palabras para los indicadores
-const WORDS = {
-  provisions: v => ['Nada', 'Justo', 'Algo', 'Reserva', 'De sobra', 'De sobra'][v] || 'Nada',
-  fuel: v => ['Vacío', 'Reserva', 'Medio', 'Holgura', 'Lleno', 'Lleno'][v] || 'Vacío',
-  fatigue: v => ['Entero', 'Despierto', 'Con sueño', 'Pesado', 'Al límite', 'Vacío'][v] || 'Vacío',
-  exposure: v => ['Limpio', 'Expuesto', 'Marcado', 'Fiebre'][v] || 'Fiebre',
-  closeness: v => v <= 1 ? 'Distancia' : v <= 3 ? 'Tregua' : v <= 5 ? 'Confianza' : v <= 7 ? 'Cerca' : 'Sin palabras',
-  signal: v => v <= 1 ? 'Lejos' : v <= 3 ? 'Sin noticias' : v <= 5 ? 'Un hilo' : v <= 7 ? 'Te busca' : 'Te sigue'
-};
-const LABELS = { provisions: 'Provisiones', fuel: 'Gasolina', fatigue: 'Cansancio', exposure: 'Exposición', closeness: 'Juliet', signal: 'Andreína' };
-
-/* =========================================================
-   INTERFAZ
-   ========================================================= */
-
-const KEY = 'movimiento-es-vida-v2';
-const AUTHOR = /[?&]autor=1/.test(location.search);
-const $ = id => document.getElementById(id);
-const el = (tag, cls, text) => { const x = document.createElement(tag); if (cls) x.className = cls; if (text != null) x.textContent = text; return x; };
-
-let save = { version: 2, slot: null, endings: [] };
-let game = null;       // partida en curso
-let shown = 1;         // párrafos visibles de la escena actual
-
-function load() {
-  try {
-    const raw = localStorage.getItem(KEY);
-    if (!raw) return;
-    const p = JSON.parse(raw);
-    save = { version: 2, slot: restore(p.slot), endings: Array.isArray(p.endings) ? p.endings.filter(e => typeof e === 'string') : [] };
-  } catch { /* sin almacenamiento: se juega igual */ }
-}
-function persist() {
-  try { localStorage.setItem(KEY, JSON.stringify(save)); return true; } catch { return false; }
-}
-function toast(msg) {
-  const t = $('toast'); t.textContent = msg; t.hidden = false;
-  clearTimeout(toast.t); toast.t = setTimeout(() => { t.hidden = true; }, 2400);
-}
-
-/* ---------- Pantalla de título ---------- */
-function showTitle() {
-  game = null;
-  $('game').hidden = true; $('title').hidden = false;
-  const cont = $('continue');
-  cont.hidden = !save.slot;
-  if (save.slot) $('continueWhere').textContent = nameOf(save.slot) + ' · ' + val(node(save.slot.nodeId).place, save.slot);
-  $('nameForm').hidden = true; $('confirmNew').hidden = true;
-  const all = allEndings(), seen = all.filter(e => save.endings.includes(e.id));
-  $('endingsCount').textContent = `Finales ${seen.length} de ${all.length}`;
-  const list = $('endingsList'); list.replaceChildren();
-  if (!seen.length) list.append(el('p', 'muted small', 'Todavía no has llegado a ningún final.'));
-  for (const e of seen) {
-    const li = el('div', 'ending-card');
-    li.append(el('h3', null, e.title), el('p', 'muted small', e.epitaph));
-    list.append(li);
-  }
-  window.scrollTo(0, 0);
-}
-
-function askName() {
-  $('confirmNew').hidden = true;
-  $('nameForm').hidden = false;
-  const i = $('heroName'); i.value = ''; i.focus();
-}
-function startNew(name) {
-  $('nameForm').hidden = true;
-  game = enterNode(newGame(name), STORY.start);
-  save.slot = game; persist();
-  shown = 1; showGame();
-}
-function continueGame() {
-  game = save.slot; shown = paragraphs(game).length; showGame();
-}
-
-/* ---------- Partida ---------- */
-function showGame() {
-  $('title').hidden = true; $('game').hidden = false;
-  render(true);
-}
-
-function statRow(k, compact) {
-  const v = game.stats[k], max = STORY.maxStats[k];
-  const row = el('div', compact ? 'stat compact' : 'stat');
-  const head = el('div', 'stat-head');
-  head.append(el('span', 'stat-label', LABELS[k]), el('span', 'stat-word', WORDS[k](v) + (AUTHOR ? ` (${v})` : '')));
-  const bar = el('div', 'bar');
-  bar.setAttribute('role', 'img'); bar.setAttribute('aria-label', `${LABELS[k]}: ${WORDS[k](v)}, ${v} de ${max}`);
-  for (let i = 0; i < max; i++) bar.append(el('span', i < v ? 'on' : ''));
-  row.append(head, bar);
-  return row;
-}
-
-function render(scrollTop) {
-  const n = node(game.nodeId);
-  const paras = paragraphs(game);
-  shown = Math.min(Math.max(shown, 1), paras.length);
-  const place = val(n.place, game), when = val(n.when, game);
-
-  // indicadores
-  for (const id of ['stats', 'statsMobile']) {
-    const box = $(id); box.replaceChildren();
-    for (const k of Object.keys(LABELS)) box.append(statRow(k, id === 'statsMobile'));
-  }
-  $('placeSide').textContent = place; $('whenSide').textContent = when;
-  $('placeTop').textContent = place; $('whenTop').textContent = when;
-  $('clueCount').textContent = game.clues.length;
-  $('clueCountTop').textContent = game.clues.length;
-
-  // escena
-  const scene = $('scene'); scene.replaceChildren();
-  if (n.ending) scene.append(el('p', 'eyebrow', 'Final · ' + n.ending.title));
-  else scene.append(el('p', 'eyebrow muted', `${place} · ${when}`));
-  const last = game.history[game.history.length - 1];
-  if (last && !n.ending) scene.append(el('p', 'echo', 'Elegiste: ' + last.label));
-  if (game.fresh.length) scene.append(el('p', 'fresh', 'Nuevo en el diario · ' + game.fresh.map(c => STORY.codex[c].title).join(' · ')));
-  if (AUTHOR) scene.append(el('p', 'author', `[${game.nodeId}] flags: ${game.flags.join(', ') || '—'}`));
-
-  const text = el('div', 'story');
-  paras.slice(0, shown).forEach((p, i) => {
-    const para = el('p', i === shown - 1 && shown > 1 ? 'rise' : '', p);
-    text.append(para);
-  });
-  scene.append(text);
-
-  const actions = el('div', 'actions');
-  if (shown < paras.length) {
-    const more = el('button', 'btn primary', 'Seguir');
-    more.onclick = () => { shown++; render(false); more.blur(); };
-    const all = el('button', 'btn link', 'Mostrar todo');
-    all.onclick = () => { shown = paras.length; render(false); };
-    actions.append(more, all);
-  } else if (n.ending) {
-    actions.append(el('p', 'epitaph', n.ending.epitaph));
-    const close = el('button', 'btn primary', 'Cerrar la partida');
-    close.onclick = () => { save.slot = null; persist(); toast('Final guardado.'); showTitle(); };
-    actions.append(close);
-  } else {
-    const list = choicesFor(game);
-    actions.append(el('p', 'eyebrow muted', '¿Qué haces?'));
-    list.forEach(({ choice, label, enabled, reason }, i) => {
-      const b = el('button', 'choice');
-      b.disabled = !enabled;
-      b.append(el('span', 'num', String(i + 1).padStart(2, '0')));
-      const body = el('span', 'choice-body');
-      body.append(el('span', 'choice-label', label));
-      if (reason) body.append(el('span', 'choice-hint', reason));
-      b.append(body);
-      b.onclick = () => pick(choice.id);
-      actions.append(b);
-    });
-    if (!list.some(c => c.enabled)) {
-      // Red de seguridad: nunca debería pasar
-      const b = el('button', 'btn', 'Volver al título');
-      b.onclick = showTitle; actions.append(el('p', 'muted small', 'No hay salida desde aquí. Esto es un error de la historia.'), b);
-    }
-  }
-  scene.append(actions);
-
-  if (scrollTop) window.scrollTo(0, 0);
-  else { const t = text.lastElementChild; if (t && t.scrollIntoView) t.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
-}
-
-function pick(id) {
-  const before = game;
-  game = choose(game, id);
-  if (game === before) return;
-  const n = node(game.nodeId);
-  if (n.ending && !save.endings.includes(game.nodeId)) save.endings.push(game.nodeId);
-  save.slot = game;
-  if (!persist()) $('saveNote').textContent = 'No se pudo guardar en este navegador. Exporta la partida para no perderla.';
-  shown = 1;
-  render(true);
-}
-
-/* ---------- Diálogos ---------- */
-function openJournal(tab) {
-  const d = $('journal');
-  const body = $('journalBody'); body.replaceChildren();
-  for (const b of d.querySelectorAll('[data-tab]')) b.classList.toggle('active', b.dataset.tab === tab);
-  if (tab === 'pistas') {
-    if (!game.clues.length) body.append(el('p', 'muted', 'Todavía no hay nada anotado.'));
-    for (const c of game.clues) {
-      const e = STORY.codex[c]; const item = el('div', 'clue');
-      item.append(el('h3', null, e.title), el('p', null, e.text)); body.append(item);
-    }
-  } else {
-    if (!game.history.length) body.append(el('p', 'muted', 'Tu historia empieza en la azotea del anexo.'));
-    const ol = el('ol', 'history');
-    for (const h of game.history) { const li = el('li'); li.append(el('span', 'muted small', h.place), el('span', null, h.label)); ol.append(li); }
-    body.append(ol);
-  }
-  if (!d.open) d.showModal();
-}
-
-function exportSave() {
-  const blob = new Blob([JSON.stringify(save, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob); a.download = 'movimiento-es-vida-partida.json';
-  document.body.append(a); a.click(); a.remove();
-  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-}
-async function importSave(file) {
-  try {
-    if (!file || file.size > 300000) throw 0;
-    const p = JSON.parse(await file.text());
-    const slot = restore(p.slot);
-    if (!slot && !Array.isArray(p.endings)) throw 0;
-    save = { version: 2, slot, endings: Array.isArray(p.endings) ? p.endings.filter(e => typeof e === 'string') : [] };
-    persist(); $('menu').close(); toast('Partida importada.');
-    if (slot) { game = slot; shown = paragraphs(game).length; showGame(); } else showTitle();
-  } catch { toast('Ese archivo no es una partida válida.'); }
-}
-
-/* ---------- Arranque ---------- */
-function boot() {
-  load();
-  $('newGame').onclick = () => {
-    if (save.slot) { $('nameForm').hidden = true; $('confirmNew').hidden = false; } else askName();
-  };
-  $('confirmYes').onclick = askName;
-  $('nameForm').onsubmit = e => { e.preventDefault(); startNew($('heroName').value); };
-  $('nameCancel').onclick = () => { $('nameForm').hidden = true; };
-  $('confirmNo').onclick = () => { $('confirmNew').hidden = true; };
-  $('continue').onclick = continueGame;
-  for (const id of ['openJournal', 'openJournalTop']) $(id).onclick = () => openJournal('pistas');
-  for (const id of ['openMenu', 'openMenuTop']) $(id).onclick = () => $('menu').showModal();
-  for (const b of document.querySelectorAll('[data-tab]')) b.onclick = () => openJournal(b.dataset.tab);
-  for (const b of document.querySelectorAll('[data-close]')) b.onclick = () => b.closest('dialog').close();
-  $('toTitle').onclick = () => { $('menu').close(); showTitle(); };
-  $('restart').onclick = () => { $('menu').close(); showTitle(); askName(); };
-  $('export').onclick = exportSave;
-  $('import').onchange = e => importSave(e.target.files[0]);
-  document.addEventListener('keydown', e => {
-    if (!game || $('game').hidden || document.querySelector('dialog[open]')) return;
-    const n = parseInt(e.key, 10);
-    if (n >= 1 && n <= 9) {
-      const all = [...document.querySelectorAll('#scene .choice')];
-      if (all[n - 1] && !all[n - 1].disabled) all[n - 1].click();
-    } else if ((e.key === ' ' || e.key === 'Enter') && document.activeElement === document.body) {
-      const more = document.querySelector('#scene .btn.primary');
-      if (more) { e.preventDefault(); more.click(); }
-    }
-  });
-  showTitle();
-}
-boot();
+function fresh(name='León'){return {schema:'MEV-REPLICA-1',name:cleanName(name),node:'anexo',day:0,stats:{food:3,fuel:3,fatigue:1,trust:2,attraction:0,resentment:0,med:1,barrier:0},flags:[],clues:[],history:[],reply:'',infection:null,treatedStage:null,focus:{mara:{target:'Mara',strength:2,candidate:null,charge:0},marcelo:{target:'Vecino',strength:1,candidate:null,charge:0}},ending:null,read:1};}
+function cleanName(n){return String(n||'León').replace(/[<>\x00-\x1f]/g,'').replace(/\s+/g,' ').trim().slice(0,24)||'León'}
+function disease(s){if(has(s,'under_care'))return s.treatedStage||0;return s.infection===null?0:Math.min(4,1+Math.floor(Math.max(0,s.day-s.infection)/1));}
+function speak(s,id,speaker,amount){let f=s.focus[id];if(!f)return;if(f.target===speaker){f.strength=Math.min(4,f.strength+amount);return}if(f.candidate!==speaker){f.candidate=speaker;f.charge=0}f.charge+=amount;if(f.charge>=f.strength+1){f.target=speaker;f.strength=Math.min(4,f.charge-1);f.candidate=null;f.charge=0}}
+function change(s,c={}){for(let[k,v]of Object.entries(c.stats||{}))s.stats[k]=clamp(s.stats[k]+v,MAX[k]);for(let f of c.flags||[])add(s,f);for(let k of c.clues||[])if(!s.clues.includes(k))s.clues.push(k);if(c.infect&&s.infection===null&&!has(s,'under_care')){s.infection=s.day;add(s,'exposed')}if(c.speak)speak(s,...c.speak);if(c.reply)s.reply=c.reply;if(c.treat){s.treatedStage=disease(s);add(s,'under_care');}return s}
+function available(s){return (SCENES[s.node].choices||[]).map((c,i)=>({...c,i,enabled:!c.condition||c.condition(s)}))}
+function enter(s,id){if(!SCENES[id])throw Error('Unknown scene '+id);s.node=id;s.read=1;let n=SCENES[id];s.day=Math.max(s.day,n.day||0);if(n.enter)n.enter(s);return s}
+function choose(state,index){let c=available(state).find(x=>x.i===index);if(!c||!c.enabled)return state;let s=structuredClone(state);s.reply='';s.history.push({scene:s.node,title:SCENES[s.node].title,label:c.label,day:s.day});change(s,typeof c.change==='function'?c.change(s):c.change);return enter(s,typeof c.next==='function'?c.next(s):c.next)}
+function textOf(s){let b=SCENES[s.node].body;return (typeof b==='function'?b(s):b).replaceAll('{nombre}',s.name)}
+function night(s){if(s.stats.food>0){s.stats.food--;s.stats.fatigue=Math.max(0,s.stats.fatigue-2);s.reply='Compartieron una ración y durmieron por turnos. −1 provisión; menos cansancio.'}else{s.stats.fatigue=Math.min(6,s.stats.fatigue+2);s.reply='Pasaron la noche sin comer. El cansancio aumenta.'}}
+const well=s=>disease(s)<3, fuel=s=>s.stats.fuel>=2, close=s=>s.stats.trust>=5&&s.stats.resentment<=2;
+scene('anexo','Lo que anotas','Anexo del Comité',0,para('Lunes. Puerto Gris. Subes a la azotea del anexo con una caja de herramientas. Te llamas {nombre} y reparas los equipos de climatización del Comité y del edificio Costa, donde vives.','Una tubería de servicio ha perdido líquido sobre la bandeja de retorno. Junto a ella hay una caja rota de muestras clínicas. Brown te detiene antes de que la toques: el personal de limpieza se encargará.','—Pon «filtro saturado». Lo demás lo resolvemos nosotros.','Tienes las manos limpias y el bolígrafo sobre la libreta. Brown firma las órdenes al final de cada visita. Andreína, tu pareja, lleva semanas investigando contratos del anexo. No sabe que te han llamado hoy.'),[
+ pick('Describir la rotura y la caja de muestras.','escalera',{flags:['truth'],clues:['log']},'Conservar una descripción precisa puede comprometerte.'),
+ pick('Anotar «filtro saturado», como pide Brown.','escalera',{flags:['false_log'],clues:['log']},'La firma queda; el incidente real, fuera del registro.')]);
+scene('escalera','Una frase fuera de lugar','Edificio Costa',1,para('El martes por la tarde encuentras a don Marcelo sentado en la escalera. Parece agotado, pero te reconoce y pregunta por una gotera.','Le respondes desde el descanso. Él repite «mañana lo reviso», primero como una broma, después con un esfuerzo extraño por copiar tu cadencia.','Cuando te acercas al siguiente escalón se pone de pie demasiado rápido. —Espera. Sigue contándome.','Tiene un papel doblado en la mano. El pasillo hacia el 4B está libre. Juliet vive allí. Antes de salir por la mañana le dejaste una nota: viste a un hombre retener a un vecino después de pedirle ayuda, y no sabías cómo explicarlo mejor.'),[
+ pick('Leer el papel desde el descanso, sin acercarte más.','marcelo',{clues:['echo'],stats:{trust:1}},'Mantener la distancia.'),
+ pick('Preguntarle varias veces si se siente bien.','marcelo',{clues:['echo'],speak:['marcelo','protagonista',2],flags:['marcelo_heard']},'Conversar puede retener su atención. No implica contagio.'),
+ pick('Apartar su mano para pasar.','marcelo',{clues:['echo'],flags:['pushed_marcelo'],stats:{fatigue:1}},'Contacto con piel intacta; no hay fluido ni herida.')]);
+scene('marcelo','Antes de que te lo pida','Descanso del segundo piso',1,s=>para('En el papel hay una letra temblorosa: «Me cuesta dejar ir a la gente. Por favor, avisen al puesto. Aunque después les diga que estoy bien».','Marcelo se da cuenta de que miras la nota. —La escribí yo. Esta mañana. No quiero hacerte nada.','Se agarra a la baranda con las dos manos. Le cuesta mantenerse allí.',has(s,'marcelo_heard')?'Al subir, lo oyes repetir una expresión tuya. Da un paso para seguirte y después vuelve a sujetarse a la baranda.':'Te sigue con la mirada. Cuando dejas de hablar no pierde el interés de inmediato, pero tampoco te persigue.'),[
+ pick('Dejar la nota visible y avisar por escrito a los vecinos.','juliet',{clues:['restraint'],flags:['warned'],stats:{fatigue:1,trust:1}},'El aviso permitirá localizarlo después.'),
+ pick('Subir al 4B y conservar el papel para enseñarlo.','juliet',{clues:['restraint']})]);
+scene('juliet','Una mochila para dos','Apartamento 4B',1,para('Juliet abre con la cadena puesta. Tiene treinta y un años, es enfermera y hoy había cambiado su turno para visitar a su hermana. La visita ya no va a ocurrir.','—Tu nota podría haber sido un poco más concreta.','Se la explicas. Por fin retira la cadena. Hay arroz sobre la cocina y dos tazas en el fregadero. Conoces ese apartamento de las veces que se quedaron conversando después de subir las compras.','—Andreína no contesta —dices. Juliet mira su teléfono, pero no lo levanta todavía.'),[
+ pick('Contarle el incidente del anexo y tu incertidumbre.','preparar',{stats:{trust:1},flags:['honest_start']}),
+ pick('Confesarle que has empezado a sentir algo por ella.','preparar',{stats:{attraction:1,resentment:1},flags:['rushed'],reply:'—No puedo responder a eso mientras estamos decidiendo cómo salir. Lo hablaremos cuando pueda pensar.'}),
+ pick('Proponer que permanezcan aquí y escuchen las noticias.','preparar',{flags:['cautious'],reply:'Juliet propone el puesto de Rita: hay personal y un patio separado. Primero tendrán que salir del edificio.'})]);
+scene('preparar','Lo que cabe','Cocina del 4B',1,para('Preparan agua y comida para varios días, una linterna y el pequeño botiquín de Juliet. Las provisiones del juego representan comida y agua para los dos; cada noche consume una unidad.','Abajo siguen tu libreta y una caja de protección del taller. Recuperarlas exige bajar una planta más.','Juliet insiste en llevar lápices. —Por Marcelo. Y por si los demás también necesitan escribir.'),[
+ pick('Recuperar la libreta y la protección del taller.','taller',{stats:{fatigue:1}}),
+ pick('Salir con lo que tienen.','salida',{},'Conservas energía; dejas el documento original.')]);
+scene('taller','Guantes de trabajo','Cuarto de mantenimiento',1,s=>para('El taller está vacío. Tomas la libreta y dos paquetes con guantes, gafas y barreras contra salpicaduras. El anexo los dejó tras una capacitación que casi nadie atendió.',has(s,'truth')?'La anotación describe la rotura, la hora y la firma de Brown.':'Tu propia letra dice «filtro saturado». Podrás declarar lo que viste, pero este papel no lo demuestra.','La manija de la puerta está seca. No tienes que tocar ninguna muestra para recuperar tus cosas.'),[
+ pick('Guardar todo y reunirte con Juliet.','salida',{flags:['log','gear'],stats:{barrier:2}})]);
+scene('salida','Una puerta que pesa','Salida de servicio',1,para('Un hombre está sentado contra la salida. Te reconoce del edificio y te pide ayuda con la pierna. Cuando Juliet le pregunta dónde le duele, la mira a la boca y vuelve a pedir que se acerque.','—Aquí —dice, sin señalarse nada—. Aquí.','Mueve la silla de manera que tapa parte del paso. Hay otra salida por la escalera del patio. No saben si está enfermo, asustado o ambas cosas.'),[
+ pick('Dar el rodeo por el patio.','carretera',{stats:{fatigue:1}},'Evitas el contacto; exige más esfuerzo.'),
+ pick('Pedirle que se aparte desde detrás de la puerta de cristal.','carretera',{flags:['door_voice'],reply:'Se levanta para acercarse a tu voz. Cierras el cristal y sales con Juliet por el patio. El rodeo también te cansa.',stats:{fatigue:1}}),
+ pick('Intentar abrirte paso junto a la silla.','salpicadura',{},'Puedes quedar al alcance de sus manos.')]);
+scene('salpicadura','El contacto','Salida de servicio',1,para('El hombre se levanta, te agarra la manga y empieza a hablarte muy cerca. Tiene saliva en los labios. Juliet abre la puerta del patio y te llama con un gesto.','Ves su mano acercarse a tu cara. Todavía puedes retroceder.'),[
+ pick('Usar un paquete de protección y apartarte detrás del cristal.','carretera',{stats:{barrier:-1},flags:['protected_contact']},'Consume 1 paquete. La barrera evita la salpicadura.',s=>s.stats.barrier>0),
+ pick('Retroceder por el patio, soltando la mochila para liberarte.','carretera',{stats:{food:-1,fatigue:1},reply:'Recuperas la mochila, pero una botella se rompe. Sales sin fluido en ojos, boca ni heridas.'},'Pierdes 1 provisión.',s=>s.stats.food>0),
+ pick('Forcejear y salir por la puerta.','carretera',{infect:true,flags:['eye_contact'],stats:{fatigue:1},reply:'Una salpicadura alcanza tu ojo. Juliet registra la hora y te ayuda a limpiarte; eso no garantiza que se evite la infección.'},'Exposición directa a una mucosa.')]);
+scene('carretera','Las cuatro y diez','Carretera del norte',1,para('La camioneta es de la cooperativa del edificio. Su conductor la dejó con las llaves en conserjería para evacuar vecinos. Anotas la matrícula antes de salir.','Juliet tarda en hablar. —Andreína me llamó. A las cuatro y diez. Estaba junto al anexo. Me pidió que te avisara que no fueras al polideportivo.','Te enseña el registro. —Yo le pregunté qué había pasado. Dijo que un entrevistado le había escupido cerca del ojo. Estaba buscando atención. Después se cortó.','Juliet se disculpa por haber esperado a que salieran del edificio. Tú sigues mirando la carretera.'),[
+ pick('Agradecerle la información y dejar un mensaje a Andreína.','gasolinera',{clues:['andreina'],stats:{trust:1},flags:['message_a']}),
+ pick('Preguntarle por qué no lo dijo antes y escuchar su respuesta.','gasolinera',{clues:['andreina'],flags:['asked_delay'],reply:'—Me asusté. Y no sabía cómo interrumpirte. No fue una buena decisión. La explicación no lo resuelve todo.'}),
+ pick('Decir que ahora solo importa lo que pase entre ustedes.','gasolinera',{clues:['andreina'],stats:{resentment:2},reply:'—A mí también me importa ella. No me pidas que la borre para acompañarte.'})]);
+scene('gasolinera','Las Palmas','Estación de servicio',1,para('Mara atiende desde detrás de una reja. En el local contiguo su hermano Diego repite una frase con una cadencia parecida a la de ella. No consigue reproducir su voz grave.','—Puede abrir cierres —advierte Mara—. No metan las manos. Antes me pidió que lo dejara separado. Ahora dice que solo necesita que entre un minuto.','Ofrece combustible y comida a cambio de gasas y antiséptico. Juliet aclara que el botiquín contiene eso, no una cura.'),[
+ pick('Intercambiar el botiquín por combustible y provisiones.','diego',{stats:{med:-1,fuel:2,food:2},flags:['mara_ally']},'−1 botiquín; +2 combustible; +2 provisiones.',s=>s.stats.med>0),
+ pick('Intercambiar una provisión por combustible.','diego',{stats:{food:-1,fuel:1}},'−1 provisión; +1 combustible.',s=>s.stats.food>0),
+ pick('Conservar los suministros y pedir indicaciones al puesto.','diego')]);
+scene('diego','Una respuesta más','Reja de Las Palmas',1,para('Diego te pregunta la hora desde el otro lado de la reja. Se la señalas en el reloj. Dice que no ve bien los números.','—Dímela. ¿Qué te cuesta?','Mara mueve un cartel grande hacia él. Diego lo lee sin dificultad, pero vuelve a preguntarte. No intenta alcanzar la comida que ella le deja por una bandeja.'),[
+ pick('Dar la hora por escrito y mantener la separación.','vivero',{clues:['voice'],flags:['written_diego']},'No construyes una fijación nueva.'),
+ pick('Conversar brevemente para tranquilizarlo.','diego_mas',{clues:['voice'],speak:['mara','protagonista',1]},'La reja evita el contacto; tu voz empieza a atraerlo.')]);
+scene('diego_mas','La conversación que no termina','Reja de Las Palmas',1,para('Diego pregunta por tu trabajo. Hace un comentario razonable sobre la camioneta. Luego te pide que repitas una frase que no tenía nada de importante.','Todavía habla como Mara en algunas palabras. Cuando Juliet recoge la mochila, Diego sujeta la reja. —No se vayan todavía.'),[
+ pick('Terminar la conversación y salir con Juliet.','vivero',{flags:['diego_partial'],reply:'Diego sigue atento, pero continúa llamando a Mara. Una conversación corta no borró la fijación anterior.'}),
+ pick('Seguir respondiendo hasta que parezca tranquilo.','reja',{speak:['mara','protagonista',3],flags:['diego_fixed'],stats:{fatigue:1},reply:'Después de varios minutos empieza a copiar tu ritmo y se desplaza por la reja siguiéndote. Mara debe cerrar una segunda puerta.'})]);
+scene('reja','La segunda puerta','Las Palmas · patio',1,para('Diego sigue tus movimientos desde la reja. Cuando te apartas, señala una bolsa junto a la puerta exterior. —Eso es tuyo. Se te cayó.','Reconoces la bolsa de Mara. Diego también la conoce: lleva su nombre escrito. Aun así espera que te acerques.','Juliet recoge las mochilas. Mara intenta cerrar el segundo acceso, pero el pestillo está torcido. Puedes ayudar desde fuera o salir por el otro lado del patio.'),[
+ pick('Salir por el patio y dejar que Mara cierre desde su lado.','vivero',{stats:{fatigue:1},flags:['left_diego']},'El rodeo te cansa. Diego conserva la fijación, pero no puede atravesar la reja.'),
+ pick('Usar protección para liberar el pestillo desde fuera.','vivero',{stats:{barrier:-1},flags:['mara_ally'],reply:'Diego intenta sujetarte a través de los barrotes. Mantienes la barrera y consigues cerrar. No hay exposición a mucosas.'},'Consume 1 paquete; ayudas a asegurar el acceso.',s=>s.stats.barrier>0),
+ pick('Acercarte sin protección para enderezar el pestillo.','vivero',{infect:true,flags:['eye_contact','mara_ally'],reply:'Diego te retiene por la manga y habla junto a tu cara. Una salpicadura llega a tu ojo antes de que Mara consiga separarlo.'},'Exposición directa. La fijación lo lleva a retenerte, no a querer alimentarse de ti.')]);
+scene('vivero','Un lugar provisional','Vivero municipal',1,s=>para('Llegan al vivero que Mara señaló en el mapa. Hay una caseta vacía y una pizarra de turnos. Rita, la enfermera del puesto, coordina refugios por radio. Les autoriza pasar la noche y anuncia una visita para mañana.','Juliet revisa la puerta mientras tú compruebas el agua embotellada. El depósito de riego lleva meses sin mantenimiento y no se usa para beber.',has(s,'eye_contact')?'Juliet anota tu exposición en una hoja que llevarán al puesto. No tienes síntomas todavía.':'No identifican ninguna exposición directa durante la salida. Eso es distinto de tener una prueba médica negativa.'),[
+ pick('Revisar la caseta entre los dos.','cena',{stats:{trust:1}}),
+ pick('Pedirle que revise mientras preparas la comida.','cena',{flags:['cooked']}),
+ pick('Insistir en salir de nuevo sin descansar.','cena',{stats:{resentment:1},reply:'Juliet se niega a conducir cansada. Acuerdan quedarse y discutir la ruta con luz.'})]);
+scene('cena','El arroz pegado','Caseta del vivero',1,s=>para('La hornilla calienta solo por un lado. Juliet intenta despegar el arroz de la olla sin que la veas y acaba riéndose.','—Soy buena con las dosis. Las recetas se me dan peor.','Se sientan en dos cajas. Hablan de la vecina que siempre deja ropa en la azotea y de una serie que ninguno terminó.',has(s,'rushed')?'Al guardar los platos, Juliet vuelve a tu confesión. —La escuché. Solo necesito que no me pidas una respuesta ahora.':'Cuando se acaba la conversación, el silencio resulta cómodo por primera vez.'),[
+ pick('Compartir el trabajo y dejar el tema sentimental para otro día.','noche1',{stats:{trust:1},flags:['patient']}),
+ pick('Decir que te gustaría repetir una cena normal con ella.','noche1',{stats:{attraction:1},flags:['interest']}),
+ pick('Preguntarle si hay alguna posibilidad entre ustedes.','noche1',{stats:{resentment:1},reply:'—Hoy no te puedo contestar. Necesito dormir.'})]);
+scene('noche1','La primera guardia','Caseta del vivero',1,s=>para('Unos pasos se detienen junto a la verja. Alguien pregunta si queda sitio. Juliet levanta la mano para que esperes.','La persona repite la pregunta con la misma inflexión. No saben si está enferma. Le muestran desde la ventana el cartel con las indicaciones al puesto, sin abrir.',has(s,'diego_fixed')?'La voz no se parece a Diego. Haberle hablado en Las Palmas no le permite encontrarte a kilómetros de distancia.':'Al cabo de unos minutos los pasos se alejan por el camino.'),[
+ pick('Organizar turnos y dormir.','rita',{},'La noche consume 1 provisión si queda; descansar reduce el cansancio.')]);
+scene('rita','Dos peligros','Vivero · visita de Rita',2,s=>para('Rita llega el miércoles con una libreta plastificada. Trabajó con el equipo del anexo antes de que cerraran el acceso. Juliet la conoce del hospital y revisa con ella las páginas, sin aceptar todo por el uniforme.','Los registros describen exposición de saliva o sangre a mucosas o heridas. También distinguen esa infección de la fijación: escuchar atrae a los enfermos; no infecta al oyente.','—Hay pacientes que saben lo que están haciendo y te piden que los separes. Más tarde intentan convencerte de abrir. No puedes basar el cuidado en que siempre consigan resistirse.','Rita explica que el deterioro continúa sin voces. Las barreras contra salpicaduras, los turnos y la separación física cumplen funciones distintas.',disease(s)?'Le cuentas lo del ojo. Rita lo registra y te ofrece valoración en el puesto hoy. El silencio de anoche no elimina esa exposición.':'Rita no encuentra una exposición conocida en lo que cuentas. Eso permite concentrarse en la prevención.'),[
+ pick('Leer el protocolo y ayudar a preparar una zona de separación.','mensaje_a',{clues:['contact','surface','progression','consent'],stats:{barrier:1,trust:1}}),
+ pick('Leer el protocolo y preguntar por el tratamiento.','mensaje_a',{clues:['contact','surface','progression','treatment'],stats:{barrier:1}})
+],{enter:night});
+scene('mensaje_a','Una dirección concreta','Vivero · miércoles',2,para('Entra un mensaje de Andreína. Está en un apartamento sobre la redacción, al sur de la ciudad. Una compañera la ayudó a separarse después de la exposición. Tiene agua para dos días.','«Todavía estoy bien. A veces repito cosas. No vengas sin alguien que sepa qué hacer».','Rita confirma que el puesto tiene tratamiento experimental y un vehículo de traslado, pero necesita reparar su radiador antes de enviarlo. El camino norte lleva al archivo del Comité; allí podrían conservar los registros del incidente.','Juliet no elige por ti. —Yo quiero ayudarla. También necesitamos saber qué pasó.'),[
+ pick('Priorizar el puesto y organizar un traslado para Andreína.','puesto',{flags:['medical_route']},'Acceso temprano a atención; el archivo tendrá que esperar.'),
+ pick('Ir primero al archivo del Comité para proteger las pruebas.','archivo',{flags:['archive_route'],stats:{fuel:-1}},'Demoras la atención hasta mañana.',s=>s.stats.fuel>=1),
+ pick('Organizar el vivero y enviar a Rita la ubicación de Andreína.','refugio',{flags:['refuge_route','sent_location']},'Delegas el rescate y asumes el trabajo del refugio.')]);
+scene('puesto','La sala del patio','Puesto de salud',2,s=>para('El patio está dividido por paneles transparentes. Los pacientes pueden verse, escribir y recibir agua sin que nadie tenga que entrar a conversar con ellos.','En una sala, un maestro intenta convencer a su hermano de que perdió las llaves. Al verlas sobre la mesa cambia de argumento sin dejar de pedirle que se acerque.','Rita explica el tratamiento R-4 y sus límites. Fue desarrollado en el anexo para una infección conocida antes de este brote; la distribución se retrasó mientras el Comité discutía cómo comunicarlo. Hay unidades reservadas para cada caso evaluado, no un frasco que sirva para todo.',disease(s)?'Tu exposición es reciente. Puedes aceptar la valoración y empezar la atención ahora. Juliet puede coordinar el traslado de Andreína mientras permaneces aquí.':'Tu evaluación no detecta síntomas ni una exposición conocida. Puedes ayudar desde el taller exterior sin entrar en las salas.'),[
+ pick('Aceptar la evaluación y, si corresponde, iniciar tratamiento.','radiador',s=>({flags:['evaluated'],clues:['treatment'],treat:disease(s)>0,reply:disease(s)?'Quedas bajo observación. Juliet llevará las tareas exteriores; seguirás participando por escrito.':'Rita registra la evaluación. No administra tratamiento sin indicación.'})),
+ pick('Ayudar primero con el vehículo y posponer tu evaluación.','radiador',{flags:['declined_eval'],clues:['treatment']},'Si hubo exposición, retrasar atención tiene consecuencias.')]);
+scene('radiador','Una reparación conocida','Taller del puesto',2,s=>para(has(s,'under_care')?'Desde la separación dibujas el circuito para el mecánico. Juliet lleva el papel al taller y vuelve con una pregunta sobre la abrazadera.':'Encuentras una abrazadera floja y una manguera mal asentada. Por fin un problema que reconoces.','La reparación tarda una hora. El equipo reserva el vehículo para Andreína y pide la dirección exacta.','Antes de marcharse, Rita pregunta si alguno quiere ayudar a preparar los paquetes de limpieza. Hay trabajo seguro fuera de las salas.'),[
+ pick('Dar la dirección y completar la reparación.','tarde2',{flags:['dispatch_early','a_treated'],stats:{trust:1,food:1,fuel:1}}),
+ pick('Dar la dirección y ayudar además con los paquetes.','tarde2',{flags:['dispatch_early','a_treated'],stats:{barrier:1,food:1,fatigue:1}})]);
+scene('archivo','El papel original','Archivo del Comité',2,s=>para('La archivista, Inés, atiende desde una ventanilla. No hay soldados ni un laboratorio secreto: hay archivadores, cajas y funcionarios que no saben si volverán a cobrar.','Acepta escuchar lo que pasó, pero pide distinguir recuerdos de documentos.',has(s,'log')?(has(s,'truth')?'Tu libreta contiene la descripción precisa del incidente y la firma de Brown.':'La libreta lleva la firma de Brown, pero tu anotación dice «filtro saturado». No demuestra lo que ahora afirmas.'):'La libreta se quedó en el edificio. Puedes dar testimonio, pero no presentarla como prueba.'),[
+ pick('Mostrar la libreta y pedir una copia sellada.','archivo_dentro',{flags:['proof','copied'],stats:{trust:1}},'Prueba documental disponible.',s=>has(s,'log')&&has(s,'truth')),
+ pick('Reconocer lo que falta y buscar el registro de recepción de muestras.','archivo_dentro',{flags:['search_receipt'],stats:{fatigue:1}},'Otra fuente puede corroborar tu relato.')]);
+scene('archivo_dentro','Una cadena de decisiones','Archivo · depósito',2,s=>para(has(s,'proof')?'Inés copia tu página y la coteja con la entrega de material clínico de esa mañana.':'Encuentran la recepción de muestras y un informe de limpieza. Por sí solos no identifican al responsable; juntos corroboran parte del incidente. Inés certifica las copias.','Un parte describe la rotura de una línea de muestras junto a la bandeja del equipo. El líquido contaminó guantes y herramientas. Varios trabajadores se tocaron ojos o cortes antes de retirarlos.','No fue una nube que recorrió los conductos. El equipo de limpieza trabajó sin el protocolo adecuado y después regresó a sus casas.','Hay además una orden firmada para aplazar la notificación pública. Brown figura entre quienes la recibieron. Inés propone conservar una copia fuera del Comité.'),[
+ pick('Hacer dos copias y dejar una con Inés.','tarde2',{flags:['proof','distributed'],clues:['brown'],stats:{fatigue:1}},'La evidencia tendrá un respaldo.'),
+ pick('Llevarte la única copia certificada.','tarde2',{flags:['proof'],clues:['brown']},'Tú tendrás que conservarla.')]);
+scene('refugio','Una lista pequeña','Vivero',2,para('Llegan una madre con su hijo adulto y un repartidor. Nadie presenta síntomas visibles. Juliet organiza una revisión de exposiciones y les explica que los gestos de cuidado no sustituyen la separación cuando existe riesgo.','El depósito de riego sigue fuera de uso. El grupo trae agua envasada, una cocina y herramientas. Necesitan acordar tareas y una manera de pedir ayuda por escrito.','Rita recibe la ubicación de Andreína, pero su vehículo sigue averiado. Le das instrucciones de reparación por radio. No puedes hacer el trabajo por el mecánico.'),[
+ pick('Organizar provisiones y responsabilidades con todos.','tarde2',{flags:['organized'],stats:{food:2,trust:1}}),
+ pick('Preparar una habitación separada y un acceso con bandeja.','tarde2',{flags:['care_room'],stats:{barrier:1,trust:1,food:1}}),
+ pick('Concentrarte en la radio y dejar que Juliet decida el resto.','tarde2',{flags:['radio_help'],stats:{food:1},reply:'Resuelves una avería. Juliet te pide que mañana también participes en las decisiones del grupo.'})]);
+scene('tarde2','Media hora libre','Patio · miércoles',2,s=>para(has(s,'under_care')?'Juliet se sienta al otro lado del panel. Hablan poco y se pasan una libreta. Rita supervisa los intervalos; no hay contacto directo.':'Cuando terminan las tareas, Juliet se sienta en el escalón con dos vasos de agua.','Te pregunta qué arreglarías de tu apartamento si pudieras regresar sin prisa. Acabas describiendo una puerta que nunca cerró bien.','—Llevas un año diciendo eso —responde—. Para los demás siempre encuentras tiempo.','En la radio anuncian que las líneas del sur siguen funcionando de manera intermitente.'),[
+ pick('Preguntarle por la casa y la vida que ella quiere recuperar.','hermana',{stats:{trust:1}}),
+ pick('Proponer un café juntos cuando esto termine.','cafe',{stats:{attraction:1}}),
+ pick('Pedir un rato a solas para escribirle a Andreína.','limites',{flags:['message_a'],stats:{trust:1},reply:'Juliet te deja la libreta. No interpreta que necesites espacio como un rechazo.'})]);
+scene('hermana','Un mensaje de voz','Patio · miércoles',2,para('Juliet escucha un mensaje de su hermana. Está fuera de la ciudad y tiene a los niños con ella. La señal no permite devolver la llamada.','Juliet llora un poco, sobre todo de alivio. Te pide que no intentes arreglarle nada durante cinco minutos.','Después te cuenta que quería mudarse cerca de ellos. No lo había mencionado porque sentía que dejar el hospital era abandonar a la gente.','La conversación no tiene que conducir a una confesión.'),[
+ pick('Escuchar y preguntar qué necesitaría para decidirlo.','limites',{stats:{trust:1},flags:['knows_sister']}),
+ pick('Decirle que te gustaría acompañarla alguna vez a visitarlos.','limites',{stats:{attraction:1},flags:['knows_sister']})]);
+scene('cafe','Una invitación sin fecha','Patio · miércoles',2,s=>para('—¿Un café como vecinos o un café de los otros? —pregunta Juliet.',s.stats.resentment>=2?'No parece enfadada, pero necesita una respuesta concreta.':'Sonríe mientras espera. No te facilita la respuesta.','Todavía tienes una relación con Andreína. No basta con que esté pasando por un mal momento para darla por terminada.'),[
+ pick('Decir que te interesa, pero primero debes hablar con Andreína.','limites',{stats:{trust:1,attraction:1},flags:['honest_interest']}),
+ pick('Decir que por ahora te basta compartirlo como amigos.','limites',{stats:{trust:1},flags:['friend_path']}),
+ pick('Pedirle que no complique algo que podría ser bonito.','limites',{stats:{resentment:2},reply:'—Pedir claridad no es complicarlo. Juliet recoge su vaso y da por terminada la conversación.'})]);
+scene('limites','Lo que podemos decidir hoy','Alojamiento · miércoles',2,s=>para('Juliet propone repartir las tareas de mañana antes de cenar. Luego vuelve sobre ustedes.',s.stats.resentment>=2?'—Me importa estar aquí. Pero me he sentido presionada más de una vez. Si seguimos juntos necesito que eso cambie.':'—Me gusta poder hablar contigo. Quiero que siga siendo una elección, incluso cuando las cosas se pongan difíciles.','No pide que niegues lo que sientes. Pide que no lo conviertas en una deuda por haberla ayudado.'),[
+ pick('Reconocer su límite y acordar que puede decir que no.','amanecer3',{stats:{trust:1,resentment:-1},flags:['respected']},'Termina el día. Se consume una provisión al descansar.'),
+ pick('Pedir disculpas por haberla presionado, sin exigir perdón.','amanecer3',{stats:{resentment:-2},flags:['apology']},'La reparación empieza con la conducta de los próximos días.'),
+ pick('Evitar la conversación y acostarte.','amanecer3',{stats:{resentment:1}},'El desacuerdo queda pendiente.')]);
+scene('amanecer3','El tiempo también decide','Alojamiento · jueves',3,s=>para(has(s,'dispatch_early')?'Rita confirma que Andreína llegó al puesto anoche y comenzó atención. Está lúcida, aunque repite alguna frase cuando se cansa.':'Andreína envía otro mensaje: «Se me pegan las frases. Sigo arriba de la redacción». La demora tiene un coste que ya pueden observar.',has(s,'under_care')?'El equipo comprueba tu respuesta al tratamiento. Sigues bajo observación; la mejoría no permite dar por terminada la infección.':disease(s)?'Te descubres repitiendo una pregunta de Juliet antes de responder. Han pasado dos días desde la salpicadura. Anotas el síntoma para no discutir después si ocurrió.':'Duermes mejor de lo esperado. No has tenido síntomas ni una exposición identificada.', 'Rita ofrece evaluación hoy. Puede mandar acompañamiento para quien lo necesite; no hace falta que atravieses solo la ciudad.'),[
+ pick('Aceptar la evaluación y atender cualquier infección antes de seguir.','decision3',s=>({treat:disease(s)>0,flags:['evaluated'],clues:['treatment'],reply:disease(s)?'Rita inicia atención y asigna las salidas a Juliet. Tu recuperación dependerá de lo avanzada que llegó la infección.':'La evaluación no indica infección. Ayudas a dejar el puesto preparado.'})),
+ pick('Seguir con el plan y posponer la evaluación.','decision3',{flags:['delay_care']},'Los síntomas continúan aunque no hables.')
+],{enter:night});
+scene('decision3','Volver por alguien','Radio · jueves',3,s=>para(has(s,'dispatch_early')?'Andreína está atendida. Puedes visitarla con las condiciones del puesto o ayudar a distribuir el protocolo mientras descansa.':'El vehículo de Rita ya funciona, pero el conductor debe llevar a dos pacientes. Puedes organizar un equipo para buscar a Andreína o esperar al traslado de mañana.',has(s,'under_care')?'Si hace falta salir, Juliet y un voluntario irán con tus indicaciones. Tú permaneces en observación.':'Juliet está dispuesta a acompañarte. Nadie entra sin preparar antes la separación y el regreso.'),[
+ pick('Coordinar atención para Andreína ahora.','buscar',s=>({flags:['rescue_now'],stats:{fuel:has(s,'dispatch_early')?0:-1}}),'Si ya está en el puesto, será una visita. Si no, organizas su traslado.',s=>has(s,'dispatch_early')||s.stats.fuel>=1),
+ pick('Reservar el traslado de mañana y trabajar en el protocolo.','protocolo',{flags:['rescue_later'],stats:{trust:1}},'Andreína recibirá atención un día más tarde.')]);
+scene('buscar','Una visita preparada','Puesto / redacción',3,s=>para(has(s,'dispatch_early')?'Andreína está en el patio del puesto. Te saluda desde detrás del panel. Agradece que enviaras el vehículo.':'El equipo llega a la redacción con una separación transparente para el vehículo. Andreína abrió la puerta exterior antes de que subieran y dejó instrucciones escritas.',has(s,'under_care')&&!has(s,'dispatch_early')?'Juliet te cuenta la escena por mensaje desde el equipo de traslado.':'La conversación se mantiene breve y con distancia.','Andreína pide que no la confundan con alguien incapaz de decidir. Quiere atención y acepta el traslado. Cuando se le pega una frase, levanta la mano para detener la conversación.'),[
+ pick('Respetar sus instrucciones y acompañar el procedimiento.','andreina_habla',{flags:['a_treated','a_respected'],stats:{trust:1},clues:['consent']}),
+ pick('Insistir en que tiene que hacer lo que tú digas.','andreina_habla',{flags:['a_treated','a_controlled'],stats:{resentment:1},reply:'Rita mantiene el procedimiento acordado con Andreína. La discusión no cambia el transporte, pero sí la confianza entre ustedes.'})]);
+scene('protocolo','Aprender a cuidar','Vivero · taller',3,para('Preparan carteles con instrucciones sencillas. Un dibujo muestra una salpicadura hacia un ojo; otro distingue la voz de la exposición física.','Un voluntario propone dejar grabaciones para distraer a pacientes. Rita permite una prueba desde detrás de una separación. El paciente se acerca al altavoz, repite un fragmento y luego pregunta por qué no le responden.','El aparato atrae su atención. No lo hace saber dónde está el locutor ni garantiza que abandone una fijación anterior.','Dejan claro el límite en el cartel antes de repartirlo.'),[
+ pick('Incluir límites y dudas, además de las observaciones.','brown_contact',{clues:['recordings'],flags:['protocol'],stats:{trust:1,food:1}}),
+ pick('Concentrarte en preparar los suministros del traslado.','brown_contact',{clues:['recordings'],flags:['transfer_supplies'],stats:{barrier:1,food:1}})]);
+scene('andreina_habla','La conversación pendiente','Puesto · patio',3,para('Andreína quiere hablar de ustedes cuando Rita confirme que puede sostener una conversación breve. Pregunta si estás con Juliet. Le dices que sí.','—Antes de todo esto ya estábamos evitando cosas —dice—. No quiero que ahora decidas por culpa. Ni que uses mi enfermedad para decidir por mí.','Su cansancio obliga a dejar silencios. Esos silencios no son una amenaza; todavía puede indicar cuándo necesita parar.'),[
+ pick('Decir que quieres intentar reconstruir la relación, si ella también.','brown_contact',{flags:['a_repair','a_talk'],stats:{attraction:-1}},'Andreína acepta hablar de ello después. No promete reconciliación.'),
+ pick('Decir que quieres terminar la relación y seguir ayudándola.','brown_contact',{flags:['a_break','a_talk'],stats:{trust:1}},'Le duele. Pide espacio y que no conviertas el cuidado en una despedida apresurada.'),
+ pick('Reconocer que no puedes resolverlo hoy y acordar retomarlo.','brown_contact',{flags:['a_pending','a_talk']},'Lo pendiente seguirá influyendo en tus decisiones.')]);
+scene('brown_contact','Una explicación incompleta','Radio · jueves',3,para('Brown llama por la frecuencia del puesto. Admite que conocían el agente y que falló la contención de muestras. Insiste en que él solo retrasó el aviso para evitar pánico.','Juliet le pregunta por qué aconsejó moverse sin explicar el contacto con fluidos. Brown tarda en contestar.','—Porque la gente se quedaba atrapada con los enfermos.','Rita interviene: —Y otros salieron sin protección creyendo que bastaba con no hablar.','Brown ofrece acceso al registro completo y una evacuación desde el kilómetro 40. No puede garantizar plazas para todos.'),[
+ pick('Pedir documentos verificables y conservar el registro de la llamada.','brown_docs',{flags:['asked_records']}),
+ pick('Pedir solo las coordenadas de la evacuación.','conflicto',{flags:['boat_info'],clues:['brown']}),
+ pick('Rechazar el trato y trabajar con el puesto.','conflicto',{flags:['refused_brown'],clues:['brown'],stats:{trust:1}})]);
+scene('brown_docs','Una copia fuera del edificio','Puesto · archivo',3,s=>para('Brown envía un paquete digital firmado a la impresora de Rita. Incluye la hora del incidente, el protocolo y su orden de aplazar el aviso.',has(s,'proof')?'Las fechas coinciden con las copias que ya obtuviste. Ahora hay dos fuentes independientes.':'El paquete permite documentar lo que antes solo podías contar. Aún hace falta que alguien externo lo conserve.','Ortega coordina un refugio en el polideportivo. Puede recibir copias por radio y enviar a un mensajero. Brown pide que no lo hagan hasta que él esté fuera de la ciudad.'),[
+ pick('Compartir las copias con Rita, Inés y Ortega.','conflicto',{flags:['proof','distributed','boat_info'],clues:['brown']},'Brown pierde control sobre la evidencia.'),
+ pick('Conservarlas contigo para negociar después.','conflicto',{flags:['proof','boat_info'],clues:['brown']},'Tienes pruebas; todavía dependen de ti.')]);
+scene('conflicto','No decidir por los dos','Alojamiento · jueves',3,s=>para('Juliet necesita hablar de los días que vienen. Quiere colaborar con el puesto y saber si su hermana puede recibirla más adelante.','—Puedo acompañarte a algunas cosas. No puedo hacer todos tus planes.','Te das cuenta de que habías empezado a incluirla automáticamente cada vez que decías «nosotros».',has(s,'a_break')?'Sabe que hablaste con Andreína. No interpreta la ruptura como una invitación inmediata.':'La situación con Andreína sigue formando parte de la conversación, aunque ninguno quiera reducir todo a eso.'),[
+ pick('Escuchar su plan y negociar tareas concretas.','noche3',{stats:{trust:1,resentment:-1},flags:['shared_plan']}),
+ pick('Decirle que puede elegir otro rumbo y que lo respetarás.','noche3',{stats:{trust:1},flags:['free_choice']}),
+ pick('Recordarle que tú también te arriesgaste por ella.','noche3',{stats:{resentment:2},reply:'—Lo sé. No quiero que eso sea algo que tenga que pagarte.'})]);
+scene('noche3','Una partida de cartas','Alojamiento · jueves',3,s=>para(has(s,'under_care')?'Juegan separando las barajas a cada lado del panel. Juliet protesta porque ahora tampoco puede comprobar si haces trampa.':'Alguien encuentra una baraja incompleta. Inventan una regla para compensar las cartas que faltan.','Juliet se ríe cuando pierdes por tercera vez. No parece una escena importante hasta que notas que llevaban horas sin reír.','Al terminar, se queda un poco más. Tú puedes decidir si necesitas compañía o descanso sin convertir cada gesto en una prueba.'),[
+ pick('Quedarte conversando de cosas pequeñas.','viernes',{stats:{trust:1,attraction:1,fatigue:1},flags:['cards']},'Ganas cercanía, pero duermes algo menos.'),
+ pick('Agradecerle la compañía y descansar.','viernes',{stats:{fatigue:-1},flags:['rested']}),
+ pick('Ofrecerle la mano, preguntando primero.','viernes',s=>({stats:close(s)&&!has(s,'under_care')?{attraction:1}:{},flags:close(s)&&!has(s,'under_care')?['hand']:['hand_declined'],reply:has(s,'under_care')?'Juliet señala el panel. Apoya la palma en su lado y tú en el tuyo. La protección se mantiene.':close(s)?'Juliet acepta unos segundos. Después recoge las cartas.':'—Todavía no —dice. Respetas su respuesta y la conversación continúa.'}))]);
+scene('viernes','Lo que no se recupera de golpe','Puesto · viernes',4,s=>para(has(s,'a_late')?'Andreína llega con el traslado de esta mañana. Está más desorientada y necesita ayuda para completar instrucciones sencillas. La demora no la vuelve irrecuperable, pero complica el pronóstico.':'Andreína sigue atendida. Algunas frases le cuestan; puede escribir lo que quiere y elegir quién la acompaña.',has(s,'under_care')?'Tu tratamiento está frenando la infección. Los médicos distinguen esa respuesta de recuperar las capacidades que se hayan perdido.':disease(s)>=3?'Te cuesta terminar una nota. Una frase de Juliet reaparece en tu boca sin que quieras decirla. Tienes que elegir cómo pedir ayuda.':'El puesto evalúa a cada paciente por separado. No todos avanzan al mismo ritmo.','Rita describe el caso de Marcelo: pasó de insistir en conversar a repetir fragmentos y necesitar ayuda para comer. Dejar de persuadir no significó que se hubiera curado.'),[
+ pick('Pedir atención y dejar instrucciones para tu cuidado.','cuidado_propio',{treat:true,clues:['treatment','progression']},'Accesible cuando existe infección sin tratar.',s=>disease(s)>0&&!has(s,'under_care')),
+ pick('Revisar las necesidades del grupo antes de elegir rumbo.','planes',{},'',s=>disease(s)<3||has(s,'under_care')),
+ pick('Negar los síntomas y salir sin atención.','fuga',{flags:['refused_care']},'El deterioro seguirá avanzando.',s=>disease(s)>=3&&!has(s,'under_care'))
+],{enter:s=>{night(s);if(has(s,'rescue_later')&&!has(s,'a_treated')){add(s,'a_treated');add(s,'a_late')}}});
+scene('cuidado_propio','Lo que dejas escrito','Puesto · sala separada',4,para('Escribes que aceptas permanecer separado aunque después pidas salir. También dejas nombres de personas que pueden hablar con el equipo sobre tus preferencias.','Juliet lee la nota y pregunta si quieres que se quede cerca o si prefieres que continúe con los demás.','Rita empieza atención. Llegaste después de que aparecieran dificultades cognitivas claras. Todavía pueden tratar la infección; no pueden prometer que desaparezcan todas las secuelas.'),[
+ pick('Pedir compañía con turnos, sin contacto ni promesas románticas.','planes',{flags:['care_company'],stats:{trust:1}}),
+ pick('Animarla a continuar y aceptar al equipo del puesto.','planes',{flags:['care_independent'],stats:{trust:1}})]);
+scene('fuga','Un argumento que reconoces','Camino exterior',4,para('Juliet te alcanza desde una distancia prudente. Dices que solo necesitas caminar. Después le pides que se acerque porque no oyes bien. Sabes que la oyes.','Reconoces tu propio intento de obtener más voz y más cercanía. Todavía puedes escribir.','Ella no abre el portón. Deja una libreta en la bandeja y espera.'),[
+ pick('Escribir que necesitas ayuda y volver a atención.','planes',{treat:true,flags:['returned_care'],stats:{trust:1}}),
+ pick('Marcharte hacia el puesto remoto, rechazando este equipo.','end_letargo',{flags:['left_alone']},'Viajarás sin tratamiento inmediato.')]);
+scene('planes','Tres lugares, varias obligaciones','Puesto · viernes',4,s=>para('Ortega ha cambiado el procedimiento del polideportivo después de recibir el protocolo de Rita. Necesita testigos para investigar el anexo. En el vivero necesitan organizar un refugio duradero. En el kilómetro 40 saldrá una lancha el sábado.','Andreína seguirá atendida cualquiera que sea tu elección. No hay una cura escondida en una ruta romántica.',has(s,'under_care')?'Permanecerás bajo atención. Puedes decidir qué hacer con las pruebas y apoyar el plan de Juliet desde aquí.':'Puedes acompañar uno de esos trabajos y dejar los demás a sus equipos.','Juliet quiere que decidan con la información que tienen, sin prometer que después podrán hacerlo todo.'),[
+ pick('Entregar testimonio y ayudar en el polideportivo.','ortega',{flags:['final_civic']},'Ruta de responsabilidad pública.'),
+ pick('Trabajar con el equipo del vivero.','refugio_final',{flags:['final_refuge']},'Ruta de convivencia y cuidado.'),
+ pick('Consultar las plazas de evacuación del kilómetro 40.','barco',{flags:['final_boat']},'Ruta de separación o viaje compartido.')]);
+scene('ortega','Doscientas personas','Polideportivo / radio del puesto',4,s=>para(has(s,'under_care')?'Participas por radio desde el puesto. Juliet lleva las copias y ayuda a Ortega.':'Llegas al polideportivo con Juliet. La gente espera en grupos separados, sin que se les obligue a decir sus nombres en voz alta.','La capitana escucha tu testimonio y pide documentos. Nadie pretende que evacuar doscientas personas sea una tarea que puedas resolver solo con una frase.',has(s,'proof')?'Puedes presentar las copias y explicar qué viste personalmente.':'Solo tienes tu testimonio. Ortega puede registrarlo, pero necesita evidencia para vincular a Brown con el encubrimiento.'),[
+ pick('Entregar las pruebas y declarar con tu nombre.','antes_final',{flags:['public_witness']},'Permite una investigación documentada.',s=>has(s,'proof')),
+ pick('Entregar copias sin hacer pública tu identidad.','antes_final',{flags:['anonymous_witness']},'La evidencia circula; tu testimonio queda protegido.',s=>has(s,'proof')),
+ pick('Dar testimonio de lo que viste, señalando sus límites.','antes_final',{flags:['oral_witness']})]);
+scene('refugio_final','Un reparto justo','Vivero / radio del puesto',4,s=>para('Mara pide trasladar a Diego al puesto. Él todavía puede formular peticiones convincentes, pero ya no acepta cuando alguien termina una conversación. Ella está exhausta.','El vivero no tiene personal para sustituir atención clínica. Sí puede alojar a familiares y pacientes dados de alta con un plan de seguimiento.',has(s,'mara_ally')?'Mara recuerda el intercambio de Las Palmas y ofrece combustible para el transporte.':'Mara ofrece ayudar con los turnos a cambio de que alguien la releve esta tarde.','El grupo necesita decidir cómo sostener la comida, la protección y los descansos.'),[
+ pick('Aportar provisiones y establecer turnos con límites.','antes_final',{stats:{food:-1},flags:['sustainable']},'−1 provisión; el grupo también aportará recursos.',s=>s.stats.food>=1),
+ pick('Organizar compras y turnos con ayuda de la cooperativa.','antes_final',{flags:['cooperative'],stats:{fatigue:1}},'Más trabajo hoy; no exige entregar suministros que no tienes.'),
+ pick('Aceptar demasiados turnos para evitar pedir ayuda.','antes_final',{flags:['overwork'],stats:{fatigue:2}},'Puede sostenerse hoy; no es un plan duradero.')]);
+scene('barco','La lista del sábado','Radio del embarcadero',4,s=>para('La encargada del embarcadero confirma dos tipos de traslado. Los pacientes continúan con transporte clínico. La lancha lleva civiles sin necesidad de observación activa.',has(s,'under_care')?'Tú no puedes embarcar todavía. Puedes apoyar el viaje de Juliet o pedirle que permanezca cerca sin convertirlo en una obligación.':'Queda una plaza confirmada. Una segunda podría liberarse si aportan combustible para una embarcación auxiliar.','Andreína permanece con el equipo de Rita. Su lugar en atención no depende de esta plaza.'),[
+ pick('Reservar la plaza para Juliet si ella la quiere.','antes_final',{flags:['offer_juliet']}),
+ pick('Reservar la plaza para ti.','antes_final',{flags:['take_boat']},'Juliet tendrá que elegir otro plan.',s=>!has(s,'under_care')),
+ pick('Aportar combustible para habilitar dos plazas.','antes_final',{flags:['two_seats'],stats:{fuel:-2}},'−2 combustible. Juliet conserva su decisión.',s=>!has(s,'under_care')&&s.stats.fuel>=2),
+ pick('Dejar la plaza para otra persona y permanecer.','antes_final',{flags:['refuse_boat']})]);
+scene('antes_final','Una decisión que puede esperar','Alojamiento · viernes',4,s=>para('Juliet tiene noticias de su hermana. Puede recibirla dentro de unas semanas. Ya no tiene que elegir entre desaparecer de su vida y quedarse indefinidamente en Puerto Gris.',has(s,'a_break')?'Andreína sabe que la relación terminó. El dolor no desapareció porque la conversación fuera honesta. Sigue teniendo su propio equipo y sus propios planes.':has(s,'a_repair')?'Andreína aceptó intentar una conversación cuando esté mejor. Ese acuerdo merece que no prometas otra relación al mismo tiempo.':'No has resuelto tu relación con Andreína. Juliet lo sabe.','—No necesito que arreglemos nuestra vida esta noche —dice Juliet—. Necesito saber qué estás ofreciendo de verdad.'),[
+ pick('Ofrecer amistad y respetar el rumbo que elija.','sabado',{flags:['friend_path'],stats:{trust:1,resentment:-1}}),
+ pick('Decir que te interesa conocerla fuera de esta emergencia.','sabado',{flags:['romance_offer'],stats:{attraction:1}},'Solo habrá una posibilidad si hay confianza, interés mutuo y tu relación anterior está resuelta.',s=>has(s,'a_break')&&!has(s,'friend_path')),
+ pick('Reconocer que todavía necesitas resolver tu relación con Andreína.','sabado',{flags:['pending_ack'],stats:{trust:1}}),
+ pick('Pedirle que se quede contigo antes de decidir nada más.','sabado',{flags:['pressure_final'],stats:{resentment:2}},'Ella puede negarse.')]);
+scene('sabado','Con luz de mañana','Sábado',5,s=>para('El sábado llega sin que la ciudad haya vuelto a la normalidad. Los equipos ya comparten un protocolo y una lista de contactos. Hay menos improvisación, no menos trabajo.',has(s,'under_care')?'Tu siguiente etapa será clínica. Juliet puede acompañarte o seguir otro rumbo; ninguna de las dos decisiones altera el tratamiento que recibes.':'Preparas la mochila y entregas las llaves que no te corresponden. La cooperativa registra dónde queda su camioneta.',has(s,'a_late')?'Andreína continúa con dificultades que requieren seguimiento. La atención tardía cambió su pronóstico.':'Andreína participa en su plan de seguimiento. No está obligada a compartir tu siguiente destino.','Queda cumplir lo que acordaste.'),[
+ pick('Continuar hacia el desenlace de tus decisiones.',s=>resolveEnding(s))
+],{enter:night});
+const ENDINGS={};
+function ending(id,title,desc,body){ENDINGS[id]={title,desc};scene(id,title,'Epílogo',6,body,[],{ending:true,enter:s=>s.ending=id})}
+const romantic=s=>has(s,'romance_offer')&&has(s,'a_break')&&!has(s,'friend_path')&&s.stats.trust>=6&&s.stats.attraction>=3&&s.stats.resentment<=1;
+function resolveEnding(s){if(has(s,'under_care'))return s.treatedStage<=2?'end_temprano':'end_rehabilitacion';if(has(s,'final_civic'))return has(s,'public_witness')?'end_registro':has(s,'anonymous_witness')?'end_copias':'end_testigo';if(has(s,'final_refuge')){if(has(s,'overwork')||s.stats.fatigue>=5)return 'end_relevo';if(has(s,'a_late'))return 'end_acompanar';if(has(s,'a_repair'))return 'end_reencuentro';if(romantic(s))return 'end_cafe';return 'end_comunidad'}if(has(s,'take_boat'))return 'end_pasajero';if(has(s,'two_seats'))return close(s)?'end_dos':'end_rumbos';if(has(s,'offer_juliet'))return romantic(s)?'end_elige':'end_despedida';return 'end_camino'}
+function aftermath(s){return para(has(s,'under_care')?(has(s,'final_civic')?'Tu declaración se entrega por escrito desde el puesto.':has(s,'final_refuge')?'El grupo recibe los acuerdos de turnos que ayudaste a preparar.':has(s,'offer_juliet')?'Juliet recibe la plaza ofrecida y decide viajar después de coordinar tus visitas con el equipo.':'La plaza de evacuación queda para otra persona mientras continúas con atención.'):null,has(s,'distributed')?'Las copias del incidente están fuera del Comité. Tu siguiente destino no puede hacerlas desaparecer.':has(s,'proof')?'Rita recibe una copia de las pruebas antes de tu partida. Todavía queda contrastarlas y encontrar a quien investigue.':'Tu testimonio queda registrado. La investigación tendrá que encontrar documentación adicional.',has(s,'a_late')?'Andreína necesita rehabilitación. El equipo evita prometer una recuperación completa. Ella conserva decisiones sobre su cuidado.':'La atención temprana permite a Andreína recuperar autonomía de forma gradual. Sigue con controles y decide cuándo volver al trabajo.',has(s,'pressure_final')?'Juliet mantiene distancia después de tu última petición. Respetar su decisión será parte de lo que venga.':has(s,'friend_path')?'Juliet conserva el vínculo como amistad. Ninguno lo presenta como un premio menor.':'La cercanía con Juliet queda abierta a lo que ambos quieran fuera de la urgencia.')}
+ending('end_temprano','A tiempo','La atención llegó antes de un deterioro avanzado.',s=>para('Dos semanas después lees la misma hoja que escribiste al ingresar. Recuerdas haberla escrito. Eso no parecía un logro cuando empezó todo.','El tratamiento frena la infección y las evaluaciones no detectan secuelas persistentes. El alta llega después de observación, no después de una sola dosis.',has(s,'care_company')?'Juliet acompañó algunos turnos y descansó en otros. El equipo nunca hizo depender tu cuidado de que ella se quedara.':'Juliet te visita cuando puede. También continúa con sus propios planes.',aftermath(s)));
+ending('end_rehabilitacion','Volver despacio','La infección cedió. Recuperar capacidades llevará más tiempo.',s=>para('Semanas después, la infección está controlada. Todavía buscas palabras que antes llegaban sin esfuerzo y necesitas una lista para tareas sencillas.','El equipo no llama a eso falta de voluntad. Organizan rehabilitación y revisan qué apoyos necesitas para decidir por ti mismo.','Juliet se sienta contigo a ordenar unas cartas. No convierte el ejercicio en una prueba sentimental. Andreína tiene su propio proceso de recuperación.',aftermath(s)));
+ending('end_letargo','La última dirección','Pedir ayuda demasiado tarde también tiene una historia.',s=>para('Llegas al puesto remoto dos días después. En el trayecto repetiste una pregunta hasta olvidar por qué querías hacerla. Una brigada te encuentra junto al letrero y registra la dirección de la libreta.','Cuando consiguen controlar la infección, el deterioro ya es profundo. Pasas largos periodos sin iniciar una acción y necesitas ayuda para comer, hablar y orientarte.','Juliet recibe noticias del equipo. No le atribuyen tu estado a una conversación ni a que no te siguiera: la enfermedad avanzó durante la demora. La atención continúa, aunque el pronóstico sea incierto.'));
+ending('end_registro','El registro','La prueba y el testimonio llegan juntos.',s=>para('Ortega recibe tu declaración y la documentación. No basta para arreglar la ciudad, pero impide que el incidente se archive como una avería sin consecuencias.','El polideportivo organiza separaciones y traslados. Tu experiencia con equipos sirve para reparar accesos y sistemas de aviso; el cuidado clínico queda en manos de su equipo.','Tres semanas después te llaman para ratificar fechas. Brown tendrá que responder a preguntas que ya no controla.',aftermath(s)));
+ending('end_copias','Fuera del archivo','Las pruebas circulan sin que tengas que exponerte públicamente.',s=>para('Las copias llegan a tres destinatarios. Inés conserva la cadena de documentos y Rita puede explicar el protocolo. Tu nombre queda bajo reserva mientras se verifica el material.','No ves una detención ni un discurso final. Ves un acuse de recibo y una fecha de audiencia. Por ahora es una consecuencia concreta.',aftermath(s)));
+ending('end_testigo','Lo que viste','Un testimonio honesto también reconoce lo que no puede probar.',s=>para('Ortega registra lo que recuerdas y separa tus observaciones de las conclusiones. Sin documentos suficientes, investigar a Brown será más difícil.','Ayudas en el polideportivo durante la semana. Tu trabajo mejora la separación de espacios y los accesos del equipo. No te convierte en el autor de una explicación que no tienes.',aftermath(s)));
+ending('end_relevo','Pedir relevo','El cuidado necesita personas que también descansen.',s=>para('El plan del vivero dura tres días antes de que te quedes dormido durante un turno. Otro voluntario cubre el acceso. Nadie resulta herido, pero ya no pueden fingir que el agotamiento es un recurso.','Juliet pide una reunión y el grupo redistribuye tareas. Aceptas descansar. El refugio sigue funcionando gracias a que deja de depender de una sola persona.',aftermath(s)));
+ending('end_acompanar','Una agenda nueva','El rescate tardío cambia el futuro, no elimina a la persona.',s=>para('El vivero aloja familiares mientras el puesto atiende a los pacientes. Andreína llega más adelante con un plan de rehabilitación y objetivos pequeños que ella ayudó a elegir.','Algunos días escribe párrafos. Otros, una lista. Su investigación queda con una compañera de la redacción. Tú ayudas según lo que ella acepta, sin dar por hecho que eso reconstruye la relación.',aftermath(s)));
+ending('end_reencuentro','Volver a conversar','Seguir juntos requiere algo más que haberse sobrevivido.',s=>para('Andreína acepta un encuentro cuando el equipo autoriza el alta. Hablan del apartamento, de las discusiones anteriores y de Juliet. No intentan resolverlo durante una sola tarde.','Acuerdan intentar reconstruir la relación con tiempo y honestidad. Juliet conoce esa decisión y organiza su siguiente etapa con su hermana. Conservan una amistad con límites nuevos.',aftermath(s)));
+ending('end_cafe','Un café de verdad','Una posibilidad elegida después de la urgencia.',s=>para('Pasan cuatro semanas. El vivero tiene turnos estables y Andreína continúa con su vida y su seguimiento. La ruptura no fue fácil, pero nadie tiene que fingir que no ocurrió.','Juliet te escribe desde una cafetería que volvió a abrir: «Hoy sí puedo contestarte lo del café».','Llegas temprano. Ella pregunta por la puerta de tu apartamento. Le dices que por fin la arreglaste. Se ríe y te hace sitio. La cita empieza con una conversación normal.',aftermath(s)));
+ending('end_comunidad','Un lugar habitable','Construyeron algo que puede sostenerse.',s=>para('El vivero se convierte en alojamiento y centro de apoyo, no en una sala clínica improvisada. El equipo lleva cuentas de agua, comida y descansos. Los pacientes que lo necesitan siguen atendidos en el puesto.','Juliet permanece unas semanas y después visita a su hermana. Puedes extrañarla sin exigir que eso cambie su decisión. La rutina les permite descubrir qué vínculo quieren conservar.',aftermath(s)));
+ending('end_pasajero','Una plaza','Elegiste partir solo.',s=>para('Subes a la lancha después de entregar las llaves de la camioneta. Juliet se queda con el equipo del puesto. No le pides que te espere: desconoces cuándo podrías volver.','Durante el viaje tienes tiempo de pensar en lo que aceptaste y en lo que dejaste pendiente. Salir de Puerto Gris te da distancia; las relaciones tendrán que resolverse igualmente.',aftermath(s)));
+ending('end_dos','Dos billetes','El combustible abre una opción; la compañía sigue siendo una elección.',s=>para('La embarcación auxiliar puede salir con el combustible aportado. Juliet acepta una plaza después de confirmar que el puesto cubre sus turnos.','Viajan juntos hasta la próxima ciudad. Ella seguirá hacia su hermana; tú tendrás que decidir dónde establecerte. Compartir el trayecto no resuelve de antemano lo que son.',aftermath(s)));
+ending('end_rumbos','Dos rumbos','Había lugar para ambos, pero no un acuerdo para continuar juntos.',s=>para('Las dos plazas quedan disponibles. Juliet agradece el combustible, pero elige permanecer con Rita hasta que llegue su relevo.','Tú puedes embarcar. La segunda plaza la recibe una persona de la lista. No faltó una respuesta perfecta en el muelle: faltaron acuerdos durante los días anteriores.',aftermath(s)));
+ending('end_elige','Quedarse por ahora','Juliet puede elegir compañía sin prometer su vida entera.',s=>para('Juliet mira la plaza reservada y decide esperar al siguiente traslado. Ya dejó organizados sus turnos y avisó a su hermana.','—Quiero ver qué hacemos cuando no estemos corriendo —dice.','Permanecen unas semanas ayudando en la zona. Más adelante comparten una primera cita. El cuidado que ya se dieron no obliga a que funcione; les permite intentarlo con algo que conocían menos: tiempo.',aftermath(s)));
+ending('end_despedida','La despedida','Ofrecer una salida también implica aceptar que la use.',s=>para('Juliet acepta la plaza. Antes de embarcar te entrega una lista de contactos del puesto y te pregunta cómo vas a seguir. La escuchas sin convertir la despedida en una prueba.','Prometen avisar cuando lleguen a un lugar estable. Solo eso. El siguiente mensaje puede ser el comienzo de una amistad más tranquila.',aftermath(s)));
+ending('end_camino','El próximo tramo','Eligieron seguir en tierra, con planes propios.',s=>para('Cedes la plaza y conservas una dirección del puesto. Juliet decide cuándo viajar hacia su hermana. Tú ayudas a coordinar los suministros mientras buscas tu próximo lugar.','Ya no interpretan «movimiento es vida» como una orden de caminar sin descanso. A veces significa salir de una situación peligrosa; otras, aceptar tratamiento, cambiar de plan o pedir relevo.',aftermath(s)));
+
+/* Guardado e interfaz. Todo el contenido se inserta como texto, nunca HTML importado. */
+const STORAGE='mev-replica-completa-1',FORMAT='MEV-REPLICA-1';
+const $=id=>document.getElementById(id), elem=(tag,cls,text)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e};
+let pack={format:FORMAT,slot:null,endings:[],checkpoints:[null,null,null],step:false}, game=null, storageOK=true;
+const DAYS=['Lunes · prólogo','Martes · la salida','Miércoles · aprender','Jueves · convivir','Viernes · elegir','Sábado · cumplir','Después'];
+function validState(x){if(!x||x.schema!==FORMAT||!Object.hasOwn(SCENES,x.node)||typeof x.name!=='string'||x.name.length>24)return false;
+ if(!Number.isInteger(x.day)||x.day<SCENES[x.node].day||x.day>6)return false;
+ if(!x.stats||!Object.keys(MAX).every(k=>Number.isInteger(x.stats[k])&&x.stats[k]>=0&&x.stats[k]<=MAX[k]))return false;
+ for(const key of ['flags','clues'])if(!Array.isArray(x[key])||x[key].length>150||!x[key].every(v=>typeof v==='string'&&v.length<80))return false;
+ if(!x.clues.every(k=>Object.hasOwn(CODEX,k)))return false;
+ if(!Array.isArray(x.history)||x.history.length>150||!x.history.every(h=>h&&typeof h.title==='string'&&h.title.length<150&&typeof h.label==='string'&&h.label.length<600&&Object.hasOwn(SCENES,h.scene)))return false;
+ if(x.infection!==null&&(!Number.isInteger(x.infection)||x.infection<0||x.infection>x.day))return false;
+ if(has(x,'under_care')&&(!Number.isInteger(x.treatedStage)||x.treatedStage<1||x.treatedStage>4))return false;
+ if(x.treatedStage!==null&&(!Number.isInteger(x.treatedStage)||x.treatedStage<0||x.treatedStage>4))return false;
+ if(typeof x.reply!=='string'||x.reply.length>2000||!Number.isInteger(x.read)||x.read<1||x.read>50)return false;
+ if(!x.focus||!['mara','marcelo'].every(k=>{let f=x.focus[k];return f&&typeof f.target==='string'&&f.target.length<80&&Number.isInteger(f.strength)&&f.strength>=0&&f.strength<=4&&(f.candidate===null||typeof f.candidate==='string'&&f.candidate.length<80)&&Number.isInteger(f.charge)&&f.charge>=0&&f.charge<=5}))return false;
+ return x.ending===null||Object.hasOwn(ENDINGS,x.ending)}
+function cleanState(x){if(!validState(x))throw Error('Estado no válido');const y=fresh(x.name);for(const k of Object.keys(y))y[k]=structuredClone(x[k]);y.name=cleanName(y.name);return y}
+function importPack(p){if(!p||p.format!==FORMAT||!Array.isArray(p.endings)||p.endings.length>17||!p.endings.every(e=>Object.hasOwn(ENDINGS,e)))throw Error('Formato incorrecto');if(p.slot!==null&&!validState(p.slot))throw Error('Partida incorrecta');if(!Array.isArray(p.checkpoints)||p.checkpoints.length!==3||!p.checkpoints.every(c=>c===null||validState(c)))throw Error('Puntos incorrectos');return {format:FORMAT,slot:p.slot?cleanState(p.slot):null,endings:[...new Set(p.endings)],checkpoints:p.checkpoints.map(c=>c?cleanState(c):null),step:p.step===true}}
+function persist(){try{localStorage.setItem(STORAGE,JSON.stringify(pack));storageOK=true}catch{storageOK=false}status();return storageOK}
+function status(){const s=$('saveNote');if(s)s.textContent=storageOK?'Guardado automático en este navegador. Exporta una copia para trasladar o conservar tu partida.':'No se pudo guardar en este navegador. Puedes seguir jugando, pero exporta una copia antes de cerrar.'}
+function commit(){pack.slot=game;if(game?.ending&&!pack.endings.includes(game.ending))pack.endings.push(game.ending);persist()}
+function toast(t){$('toast').textContent=t;$('toast').hidden=false;clearTimeout(toast.timer);toast.timer=setTimeout(()=>$('toast').hidden=true,4200)}
+function load(){try{const raw=localStorage.getItem(STORAGE);if(raw)pack=importPack(JSON.parse(raw))}catch{storageOK=false;toast('No se pudo leer el guardado. Importa una copia o empieza una partida nueva.')}}
+function title(){game=null;$('game').hidden=true;$('title').hidden=false;$('confirmNew').hidden=true;$('nameForm').hidden=true;$('continue').hidden=!pack.slot;if(pack.slot)$('continueWhere').textContent=pack.slot.name+' · '+SCENES[pack.slot.node].title;$('endingsCount').textContent=`Finales descubiertos: ${pack.endings.length} de ${Object.keys(ENDINGS).length}`;$('endingsList').replaceChildren();if(!pack.endings.length)$('endingsList').append(elem('p','muted','Los desenlaces aparecerán aquí cuando los descubras.'));for(let id of pack.endings){let d=elem('div','ending-card');d.append(elem('h3',null,ENDINGS[id].title),elem('p','muted small',ENDINGS[id].desc));$('endingsList').append(d)}window.scrollTo(0,0)}
+function nameForm(){$('confirmNew').hidden=true;$('nameForm').hidden=false;$('heroName').value='';$('heroName').focus()}
+function start(name){game=enter(fresh(name),'anexo');commit();showGame()}
+function showGame(){$('title').hidden=true;$('game').hidden=false;render(true)}
+const LABELS={food:'Provisiones',fuel:'Combustible',fatigue:'Cansancio',trust:'Confianza',attraction:'Interés',resentment:'Tensión'};
+const WORDS={food:v=>v===0?'Agotadas':v+' noches para dos',fuel:v=>v+' unidades',fatigue:v=>v<=1?'Descansado':v<=3?'Cansado':v<=4?'Muy cansado':'Agotado',trust:v=>v<3?'Frágil':v<6?'En construcción':'Sólida',attraction:v=>v<2?'Sin definir':v<4?'Acercamiento':'Interés expresado',resentment:v=>v<2?'Baja':v<4?'Cosas pendientes':'Alta'};
+function row(k){let d=elem('div','stat'),h=elem('div','stat-head');h.append(elem('span','stat-label',LABELS[k]),elem('span','stat-word',WORDS[k](game.stats[k])));let bar=elem('div','bar');bar.setAttribute('role','img');bar.setAttribute('aria-label',LABELS[k]+': '+WORDS[k](game.stats[k]));for(let i=0;i<MAX[k];i++)bar.append(elem('span',i<game.stats[k]?'on':''));d.append(h,bar);return d}
+function symptom(s){if(has(s,'under_care'))return 'En atención · no equivale a alta';const n=disease(s);return n===0?'Sin exposición conocida':n===1?'Exposición registrada':n===2?'Repeticiones ocasionales':n===3?'Síntomas en aumento':'Dificultades cognitivas'}
+function render(top=false){const n=SCENES[game.node],p=textOf(game).split('\n\n');for(const id of ['stats','statsMobile']){$(id).replaceChildren();for(const k of Object.keys(LABELS))$(id).append(row(k))}$('placeSide').textContent=n.place;$('placeTop').textContent=n.place;$('whenSide').textContent=DAYS[game.day];$('whenTop').textContent=DAYS[game.day];$('clueCount').textContent=game.clues.length;$('clueCountTop').textContent=game.clues.length;
+ const r=$('scene');r.replaceChildren();r.append(elem('p','eyebrow',n.ending?'FINAL · '+n.title:DAYS[game.day]),elem('h1','scene-title',n.title));if(game.reply)r.append(elem('p','echo',game.reply));const prose=elem('div','story');const shown=pack.step?Math.min(game.read,p.length):p.length;p.slice(0,shown).forEach(t=>prose.append(elem('p',null,t)));r.append(prose);const actions=elem('div','actions');
+ if(shown<p.length){const b=elem('button','btn primary','Seguir');b.onclick=()=>{game.read++;commit();render(false);$('scene').querySelector('.actions button')?.focus({preventScroll:true})};const all=elem('button','btn link','Mostrar toda esta escena');all.onclick=()=>{game.read=p.length;commit();render(false)};actions.append(b,all)}else if(n.ending){actions.append(elem('p','epitaph',ENDINGS[game.node].desc));const b=elem('button','btn primary','Ver finales y volver al título');b.onclick=()=>{commit();title()};const j=elem('button','btn','Revisar recorrido y decisiones');j.onclick=()=>journal('recorrido');actions.append(b,j)}else{actions.append(elem('p','eyebrow muted','¿Qué haces?'));for(const c of available(game)){const b=elem('button','choice');b.disabled=!c.enabled;const t=elem('span','choice-body');t.append(elem('span','choice-label',c.label));if(c.hint)t.append(elem('span','choice-hint',c.hint));if(!c.enabled)t.append(elem('span','choice-hint','No disponible con tu situación actual.'));b.append(elem('span','num',String(c.i+1).padStart(2,'0')),t);b.onclick=()=>{game=choose(game,c.i);commit();render(true);r.querySelector('h1').focus({preventScroll:true})};actions.append(b)}}r.append(actions);r.querySelector('h1').tabIndex=-1;status();if(top)window.scrollTo(0,0)}
+function journal(tab='pistas'){const box=$('journalBody');box.replaceChildren();for(const b of document.querySelectorAll('[data-tab]'))b.classList.toggle('active',b.dataset.tab===tab);if(!game){box.append(elem('p',null,'Continúa una partida para abrir su diario.'));return}if(tab==='pistas'){if(!game.clues.length)box.append(elem('p','muted','Aún no hay observaciones anotadas.'));for(const id of game.clues){const [kind,title,text]=CODEX[id],d=elem('div','clue');d.append(elem('p','eyebrow',kind),elem('h3',null,title),elem('p',null,text));box.append(d)}}else if(tab==='estado'){box.append(elem('h3',null,'Salud y suministros'),elem('p','muted',symptom(game)),elem('p',null,`Botiquines: ${game.stats.med}. Paquetes contra salpicaduras: ${game.stats.barrier}. El tratamiento R-4 lo administra el equipo del puesto; no está en el botiquín.`),elem('h3',null,'Relaciones'),elem('p',null,`Juliet · confianza ${WORDS.trust(game.stats.trust).toLowerCase()}, interés ${WORDS.attraction(game.stats.attraction).toLowerCase()}, tensión ${WORDS.resentment(game.stats.resentment).toLowerCase()}. Estos indicadores describen el vínculo; no garantizan consentimiento ni una relación.`),elem('p',null,has(game,'a_break')?'Andreína · ruptura hablada.':has(game,'a_repair')?'Andreína · han acordado intentar hablar de reconciliación.':'Andreína · conversación sentimental pendiente.'),elem('h3',null,'Cómo funcionan las decisiones'),elem('p','muted','Las noches consumen una provisión para dos. Sin comida el cansancio aumenta. El agotamiento afecta la capacidad de sostener turnos. La exposición física inicia el deterioro; las voces solo afectan fijaciones. El tiempo avanza por escenas, nunca por cuánto tardes leyendo. La atención temprana mejora el pronóstico.'))}else{const list=elem('ol','history');for(const h of game.history){const li=elem('li');li.append(elem('span','muted small',DAYS[h.day]+' · '+h.title),elem('span',null,h.label));list.append(li)}box.append(list)}if(!$('journal').open)$('journal').showModal()}
+function menu(){const box=$('checkpoints');box.replaceChildren();for(let i=0;i<3;i++){let d=elem('div','checkpoint');d.append(elem('p','small',`Punto ${i+1} · `+(pack.checkpoints[i]?SCENES[pack.checkpoints[i].node].title:'Vacío')));let save=elem('button','btn','Guardar aquí');save.disabled=!game;save.onclick=()=>{if(pack.checkpoints[i]&&!confirm('¿Sustituir este punto guardado?'))return;pack.checkpoints[i]=structuredClone(game);persist();menu();toast(storageOK?'Punto guardado.':'Punto preparado en memoria. Exporta una copia.');};let load=elem('button','btn','Cargar');load.disabled=!pack.checkpoints[i];load.onclick=()=>{if(!confirm('¿Cargar este punto y sustituir la partida en curso?'))return;game=structuredClone(pack.checkpoints[i]);commit();$('menu').close();showGame()};d.append(save,load);box.append(d)}$('stepMode').checked=pack.step;if(!$('menu').open)$('menu').showModal()}
+function exportFile(){commitIfGame();const a=elem('a');const u=URL.createObjectURL(new Blob([JSON.stringify(pack,null,2)],{type:'application/json'}));a.href=u;a.download='movimiento-es-vida-partida.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1000)}
+function commitIfGame(){if(game)commit()}
+async function importFile(f){try{if(!f||f.size>500000)throw Error();const next=importPack(JSON.parse(await f.text()));if((pack.slot||pack.endings.length||pack.checkpoints.some(Boolean))&&!confirm('¿Sustituir la partida, los puntos guardados y la colección de finales por los de este archivo? Exporta primero si deseas conservarlos.'))return;pack=next;persist();$('menu').close();game=pack.slot;if(game)showGame();else title();toast(storageOK?'Partida importada.':'Partida importada en memoria. El guardado local no está disponible.')}catch{toast('Archivo no válido para esta edición. Tu partida actual se conserva.')}finally{$('import').value=''}}
+function askRestart(){if(pack.slot&&!confirm('¿Empezar de nuevo? Se reemplazará la partida actual. Tus puntos guardados y finales se conservan.'))return;$('menu').close();title();nameForm()}
+function boot(){load();$('newGame').onclick=askRestart;$('continue').onclick=()=>{game=structuredClone(pack.slot);showGame()};$('nameForm').onsubmit=e=>{e.preventDefault();start($('heroName').value)};$('nameCancel').onclick=()=>$('nameForm').hidden=true;$('confirmYes').onclick=nameForm;$('confirmNo').onclick=()=>$('confirmNew').hidden=true;for(const id of ['openMenu','openMenuTop','titleMenu'])$(id).onclick=menu;for(const id of ['openJournal','openJournalTop'])$(id).onclick=()=>journal();for(const b of document.querySelectorAll('[data-tab]'))b.onclick=()=>journal(b.dataset.tab);for(const b of document.querySelectorAll('[data-close]'))b.onclick=()=>b.closest('dialog').close();$('toTitle').onclick=()=>{commitIfGame();$('menu').close();title()};$('restart').onclick=askRestart;$('export').onclick=exportFile;$('importButton').onclick=()=>$('import').click();$('import').onchange=e=>importFile(e.target.files[0]);$('stepMode').onchange=e=>{pack.step=e.target.checked;persist();if(game)render()};document.addEventListener('keydown',e=>{if(e.repeat||e.ctrlKey||e.metaKey||e.altKey||!game||document.querySelector('dialog[open]')||['INPUT','TEXTAREA','BUTTON'].includes(document.activeElement.tagName))return;const k=Number(e.key);if(k>=1&&k<=9){let b=document.querySelectorAll('.actions .choice')[k-1];if(b&&!b.disabled)b.click()}});title()}
+if(typeof document!=='undefined')boot();
 
 </script>
-</body>
-</html>
+<noscript>Este juego necesita JavaScript activado. No necesita conexión a internet.</noscript></body></html>
